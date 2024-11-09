@@ -1,6 +1,6 @@
 package org.fase2.dwf2.service;
 
-import org.fase2.dwf2.dto.RegisterRequestDto;
+import org.fase2.dwf2.dto.Login.RegisterRequestDto;
 import org.fase2.dwf2.dto.UserDto;
 import org.fase2.dwf2.entities.User;
 import org.fase2.dwf2.repository.IUserRepository;
@@ -100,6 +100,17 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return mapToDto(savedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByDui(String dui) {
+        return userRepository.existsByDui(dui);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.orElse(null);
     }
 
     private UserDto convertToDto(User user) {

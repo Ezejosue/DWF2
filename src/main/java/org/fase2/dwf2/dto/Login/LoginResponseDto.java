@@ -1,4 +1,4 @@
-package org.fase2.dwf2.dto;
+package org.fase2.dwf2.dto.Login;
 
 import lombok.Data;
 
