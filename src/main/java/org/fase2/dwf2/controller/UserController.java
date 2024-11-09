@@ -11,6 +11,7 @@ import org.fase2.dwf2.dto.LoginResponseDto;
 import org.fase2.dwf2.dto.RegisterRequestDto;
 import org.fase2.dwf2.dto.UserDto;
 import org.fase2.dwf2.service.UserService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -85,14 +86,21 @@ public class UserController {
 
     @PUT
     @Path("/{email}")
-    @Operation(summary = "Update user details", description = "Updates the details of a user")
+    @Operation(summary = "Update user", description = "Updates a user by email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "An error occurred while updating the user")
     })
     public Response updateUser(@PathParam("email") String email, RegisterRequestDto registerRequest) {
-        UserDto updatedUser = userService.updateUserByEmail(email, registerRequest);
-        return Response.ok(updatedUser).build();
+        try {
+            UserDto updatedUser = userService.updateUserByEmail(email, registerRequest);
+            return Response.ok(updatedUser).build();
+        } catch (UsernameNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while updating the user").build();
+        }
     }
 
     @DELETE

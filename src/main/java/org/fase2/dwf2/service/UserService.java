@@ -7,6 +7,9 @@ import org.fase2.dwf2.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.lang.reflect.Field;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,25 +24,38 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserDto> findByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         return user.map(this::mapToDto);
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public UserDto updateUserByEmail(String email, RegisterRequestDto registerRequest) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            user.setName(registerRequest.getName());
-            user.setDui(registerRequest.getDui());
-            user.setPassword(registerRequest.getPassword());
-            user.setRole(registerRequest.getRole());
+            Field[] fields = RegisterRequestDto.class.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(registerRequest);
+                    if (value != null) {
+                        Field userField = User.class.getDeclaredField(field.getName());
+                        userField.setAccessible(true);
+                        userField.set(user, value);
+                    }
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new RuntimeException("Error updating user field", e);
+                }
+            }
             User updatedUser = userRepository.save(user);
             return mapToDto(updatedUser);
         } else {
@@ -47,6 +63,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void deleteUserByEmail(String email) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
@@ -56,6 +73,7 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUserProfile(String email) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
@@ -66,10 +84,12 @@ public class UserService {
     }
 
 
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional
     public UserDto save(RegisterRequestDto registerRequest) {
         User user = new User();
         user.setName(registerRequest.getName());
