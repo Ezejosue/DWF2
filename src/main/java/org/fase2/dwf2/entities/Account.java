@@ -1,6 +1,7 @@
 package org.fase2.dwf2.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,8 +19,9 @@ public class Account {
     private Long id;
 
     @Column(unique = true)
-    private String accountNumber;
+    private String accountNumber = generateAccountNumber();
 
+    @Min(0)
     private Double balance;
 
     @ManyToOne
@@ -28,5 +30,16 @@ public class Account {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transaction> transactions;
+
+    @PrePersist
+    private void ensureAccountNumber() {
+        if (this.accountNumber == null || this.accountNumber.isEmpty()) {
+            this.accountNumber = generateAccountNumber();
+        }
+    }
+
+    private String generateAccountNumber() {
+        return String.format("%010d", (long) (Math.random() * 1_000_000_0000L));
+    }
 
 }

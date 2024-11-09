@@ -5,6 +5,7 @@ import org.fase2.dwf2.dto.UserDto;
 import org.fase2.dwf2.entities.User;
 import org.fase2.dwf2.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,40 @@ public class UserService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
+    public UserDto updateUserByEmail(String email, RegisterRequestDto registerRequest) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setName(registerRequest.getName());
+            user.setDui(registerRequest.getDui());
+            user.setPassword(registerRequest.getPassword());
+            user.setRole(registerRequest.getRole());
+            User updatedUser = userRepository.save(user);
+            return mapToDto(updatedUser);
+        } else {
+            throw new UsernameNotFoundException("User not found");
+        }
+    }
+
+    public void deleteUserByEmail(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            userRepository.delete(optionalUser.get());
+        } else {
+            throw new UsernameNotFoundException("User not found");
+        }
+    }
+
+    public UserDto getUserProfile(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            return mapToDto(optionalUser.get());
+        } else {
+            throw new UsernameNotFoundException("User not found");
+        }
+    }
+
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);

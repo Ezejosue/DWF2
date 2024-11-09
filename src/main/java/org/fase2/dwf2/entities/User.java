@@ -1,6 +1,8 @@
 package org.fase2.dwf2.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,9 +24,11 @@ public class User {
     private String name;
 
     @Column(unique = true)
+    @Pattern(regexp = "\\d{8}-\\d", message = "El formato del DUI debe ser 06133168-2")
     private String dui;
 
     @Column(unique = true)
+    @Email
     private String email;
 
     private String password;

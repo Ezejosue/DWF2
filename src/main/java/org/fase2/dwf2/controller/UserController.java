@@ -82,4 +82,40 @@ public class UserController {
         UserDto newUser = userService.save(registerRequest);
         return Response.status(Response.Status.CREATED).entity(newUser).build();
     }
+
+    @PUT
+    @Path("/{email}")
+    @Operation(summary = "Update user details", description = "Updates the details of a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public Response updateUser(@PathParam("email") String email, RegisterRequestDto registerRequest) {
+        UserDto updatedUser = userService.updateUserByEmail(email, registerRequest);
+        return Response.ok(updatedUser).build();
+    }
+
+    @DELETE
+    @Path("/{email}")
+    @Operation(summary = "Delete user", description = "Deletes a user by email")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public Response deleteUser(@PathParam("email") String email) {
+        userService.deleteUserByEmail(email);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/{email}")
+    @Operation(summary = "Get user profile", description = "Returns the profile of a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User profile retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public Response getUserProfile(@PathParam("email") String email) {
+        UserDto user = userService.getUserProfile(email);
+        return Response.ok(user).build();
+    }
 }
