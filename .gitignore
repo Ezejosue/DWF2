@@ -5,6 +5,8 @@ target/
 !**/src/test/**/target/
 .out/
 out/
+.smarttomcat/
+smarttomcat/
 
 ### STS ###
 .apt_generated
