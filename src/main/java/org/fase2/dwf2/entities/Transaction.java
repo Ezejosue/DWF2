@@ -21,9 +21,13 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType; // DEPOSIT, WITHDRAWAL, TRANSFER
 
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id_to")
+    private Account accountTo;
 }

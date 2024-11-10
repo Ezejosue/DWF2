@@ -5,6 +5,7 @@ import org.fase2.dwf2.entities.Account;
 import org.fase2.dwf2.repository.IAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,14 +22,14 @@ public class AccountService {
     }
 
 
-    //Get account by user email
+    @Transactional(readOnly = true)
     public List<AccountRequestDto> findByUserEmail(String email) {
         return accountRepository.findByUserEmail(email).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    //create account
+    @Transactional
     public AccountRequestDto createAccount(AccountRequestDto accountRequestDto) {
         if (!userService.existsByDui(accountRequestDto.getDui())) {
             throw new IllegalArgumentException("User with this DUI does not exist");
@@ -39,7 +40,6 @@ public class AccountService {
         return convertToDto(accountRepository.save(account));
     }
 
-    //Convert Account to AccountRequestDto
     private AccountRequestDto convertToDto(Account account) {
         AccountRequestDto accountRequestDto = new AccountRequestDto();
         accountRequestDto.setAccountNumber(account.getAccountNumber());
