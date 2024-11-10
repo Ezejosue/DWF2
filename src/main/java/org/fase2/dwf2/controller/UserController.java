@@ -11,21 +11,31 @@ import org.fase2.dwf2.dto.Login.LoginResponseDto;
 import org.fase2.dwf2.dto.Login.RegisterRequestDto;
 import org.fase2.dwf2.dto.UserDto;
 import org.fase2.dwf2.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class UserController {
+public class UserController{
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
@@ -60,6 +70,17 @@ public class UserController {
         if (!passwordEncoder.matches(loginRequest.getPassword(), userDto.getPassword())) {
             return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
         }
+
+        // Setear SecurityContextHolder y autenticar el usuario
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Debug log to verify role
+        authentication.getAuthorities().forEach(authority -> {
+            System.out.println("Assigned Role: " + authority.getAuthority());
+        });
 
         LoginResponseDto responseDto = new LoginResponseDto();
         responseDto.setMessage("Login successful");
@@ -125,5 +146,29 @@ public class UserController {
     public Response getUserProfile(@PathParam("email") String email) {
         UserDto user = userService.getUserProfile(email);
         return Response.ok(user).build();
+    }
+
+    @GET
+    @Path("/user/roles")
+    @Operation(summary = "Get all user roles", description = "Returns a list of all user roles")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User roles retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User's roles not found")
+    })
+    public Response getUserRoles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(", "));
+            return Response.ok("Roles: " + roles).build();
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).entity("User not authenticated").build();
+    }
+
+    @GET
+    @Path("/user/test")
+    public Response test() {
+        return Response.ok("Test").build();
     }
 }

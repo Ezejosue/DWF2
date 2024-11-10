@@ -1,31 +1,55 @@
 package org.fase2.dwf2.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
+import java.net.URI;
 
 @Path("/")
 public class RouteController {
 
-//    @GetMapping({"/", "/login"})
-//    public String login() {
-//        System.out.println("Login page");
-//        return "login";
-//    }
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private HttpServletResponse response;
+
     @GET
     @Path("/")
     public Response getRoot() {
+        SecurityContextHolder.clearContext();
         return Response.ok(new File("src/main/resources/static/login.html")).build();
     }
 
     @GET
     @Path("/login")
     public Response getLogin() {
+        // Clear any previous authentication to ensure a fresh login session
+        SecurityContextHolder.clearContext();
         return Response.ok(new File("src/main/resources/static/login.html")).build();
+    }
+
+    @GET
+    @Path("/logout")
+    public Response logout() {
+        // Obtener el objeto de autenticación actual del SecurityContext
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            // Logout y limpiar la sesión actual
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        // Redireccionar al login
+        return Response.seeOther(URI.create("/login")).build();
     }
 
     @GET
@@ -36,31 +60,36 @@ public class RouteController {
 
     @GET
     @Path("/client/dashboard")
+    @RolesAllowed("CLIENT")
     public Response getClientDashboard() {
-        return Response.ok(new File("src/main/resources/static/client/dashboard.html")).build();
+        return Response.ok(new File("src/main/resources/static/cliente/dashboard.html")).build();
     }
 
     @GET
     @Path("/dependiente/dashboard")
+    @RolesAllowed("DEPENDIENTE")
     public Response getDependienteDashboard() {
-        return Response.ok(new File("src/main/resources/static/client/dependiente/dashboard.html")).build();
+        return Response.ok(new File("src/main/resources/static/dependiente/dashboard.html")).build();
     }
 
     @GET
     @Path("/cajero/dashboard")
+    @RolesAllowed("CAJERO")
     public Response getCajeroDashboard() {
-        return Response.ok(new File("src/main/resources/static/client/cajero/dashboard.html")).build();
+        return Response.ok(new File("src/main/resources/static/cajero/dashboard.html")).build();
     }
 
     @GET
     @Path("/gerente_general/dashboard")
+    @RolesAllowed("GERENTE_GENERAL")
     public Response getGerenteGeneralDashboard() {
-        return Response.ok(new File("src/main/resources/static/client/gerente-general/dashboard.html")).build();
+        return Response.ok(new File("src/main/resources/static/gerente-general/dashboard.html")).build();
     }
 
     @GET
     @Path("/gerente_sucursal/dashboard")
+    @RolesAllowed("GERENTE_SUCURSAL")
     public Response getGerenteSucursalDashboard() {
-        return Response.ok(new File("src/main/resources/static/client/gerente-sucursal/dashboard.html")).build();
+        return Response.ok(new File("src/main/resources/static/gerente-sucursal/dashboard.html")).build();
     }
 }
