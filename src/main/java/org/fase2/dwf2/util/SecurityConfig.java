@@ -28,7 +28,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
+                        .requestMatchers("/","/login","/api/users/register", "/api/users/login", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
+                        .requestMatchers("/client/**").hasRole("CLIENT")
+                        .requestMatchers("/dependiente/**").hasRole("DEPENDIENTE")
+                        .requestMatchers("/cajero/**").hasRole("CAJEERO")
+                        .requestMatchers("/gerente_sucursal/**").hasRole("GERENTE_SUCURSAL")
+                        .requestMatchers("/gerente_general/**").hasRole("GERENTE_GENERAL")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
