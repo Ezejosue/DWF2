@@ -1,8 +1,6 @@
 package org.fase2.dwf2.util;
 
-import org.fase2.dwf2.controller.AccountController;
-import org.fase2.dwf2.controller.TransactionController;
-import org.fase2.dwf2.controller.UserController;
+import org.fase2.dwf2.controller.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -17,6 +15,8 @@ public class JerseyConfig extends ResourceConfig {
         register(UserController.class);
         register(AccountController.class);
         register(TransactionController.class);
+        register(RouteController.class);
+        register(TestController.class);
 
 
         // Agregar un proveedor de Jackson para la serialización JSON
