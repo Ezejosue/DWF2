@@ -56,6 +56,7 @@ public class AccountController {
     @POST
     @Path("/withdraw")
     public Response withdrawFunds(AccountRequestDto accountRequestDto) {
+        System.out.println("AccountRequestDto: " + accountRequestDto);
         if (accountRequestDto.getAccountNumber() == null || accountRequestDto.getBalance() == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Account number and amount are required").build();
         }

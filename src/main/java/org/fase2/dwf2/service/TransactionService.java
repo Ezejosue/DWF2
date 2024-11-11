@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -85,36 +86,50 @@ public class TransactionService {
 
     @Transactional
     public TransactionRequestDto transfer(TransactionRequestDto transactionRequestDto) {
-        if (transactionRequestDto.getAmount() <= 0) {
+        // Validate input amount
+        if (transactionRequestDto.getAmount() == null || transactionRequestDto.getAmount() <= 0) {
             throw new IllegalArgumentException("Amount must be greater than 0");
         }
 
+        // Retrieve accounts from the repository
         Account accountFrom = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumber());
         Account accountTo = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumberTo());
 
-        if (accountFrom == null || accountTo == null) {
-            throw new IllegalArgumentException("Account does not exist");
+        // Validate accounts' existence
+        if (accountFrom == null) {
+            throw new IllegalArgumentException("Source account does not exist");
+        }
+        if (accountTo == null) {
+            throw new IllegalArgumentException("Destination account does not exist");
+        }
+        // Prevent transferring to the same account
+        if (accountFrom.getAccountNumber().equals(accountTo.getAccountNumber())) {
+            throw new IllegalArgumentException("Cannot transfer to the same account");
         }
 
+        // Check if the source account has sufficient funds
         if (accountFrom.getBalance() < transactionRequestDto.getAmount()) {
             throw new IllegalArgumentException("Insufficient funds");
         }
 
+        // Create and save the transaction
         Transaction transaction = new Transaction();
         transaction.setAmount(transactionRequestDto.getAmount());
         transaction.setTransactionType(TransactionType.TRANSFER);
         transaction.setAccount(accountFrom);
         transaction.setAccountTo(accountTo);
+        transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
+        // Update account balances and save them
         accountFrom.setBalance(accountFrom.getBalance() - transactionRequestDto.getAmount());
         accountRepository.save(accountFrom);
 
         accountTo.setBalance(accountTo.getBalance() + transactionRequestDto.getAmount());
         accountRepository.save(accountTo);
 
+        // Return DTO with updated information
         transactionRequestDto.setTransactionType(TransactionType.TRANSFER.toString());
-
         return transactionRequestDto;
     }
 
@@ -132,12 +147,16 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
-    private TransactionRequestDto mapToDto(Transaction transaction) {
-        TransactionRequestDto dto = new TransactionRequestDto();
-        dto.setAmount(transaction.getAmount());
-        dto.setTransactionType(transaction.getTransactionType().toString());
-        dto.setAccountNumber(transaction.getAccount().getAccountNumber());
-        dto.setAccountNumberTo(transaction.getAccountTo() != null ? transaction.getAccountTo().getAccountNumber() : null);
-        return dto;
-    }
+private TransactionRequestDto mapToDto(Transaction transaction) {
+    TransactionRequestDto dto = new TransactionRequestDto();
+    dto.setAmount(transaction.getAmount());
+    dto.setTransactionType(transaction.getTransactionType().toString());
+    dto.setAccountNumber(transaction.getAccount().getAccountNumber());
+    dto.setAccountNumberTo(transaction.getAccountTo() != null ? transaction.getAccountTo().getAccountNumber() : null);
+    dto.setDate(transaction.getTimestamp());
+
+    System.out.println("DTO: " + dto);
+    return dto;
+}
+
 }

@@ -6,6 +6,8 @@
     <title>Withdraw Funds</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body, html {
@@ -88,7 +90,7 @@
 </div>
 
 <script>
-    axios.get('/api/user/current')
+    axios.get('/api/users/current')
         .then(response => {
             const userEmail = response.data.email;
 
@@ -132,6 +134,7 @@
         const accountNumber = document.getElementById('account-select').value;
         const withdrawAmount = parseFloat(document.getElementById('withdraw-amount').value);
 
+        // Ensure that the amount is a valid number
         if (!accountNumber || withdrawAmount <= 0 || isNaN(withdrawAmount)) {
             Swal.fire({
                 icon: 'warning',
@@ -141,9 +144,15 @@
             return;
         }
 
+        // Log the data being sent to check the payload
+        console.log('Sending withdrawal request:', {
+            accountNumber: accountNumber,
+            balance: withdrawAmount // Ensure the key matches the DTO field
+        });
+
         axios.post('/api/account/withdraw', {
             accountNumber: accountNumber,
-            amount: withdrawAmount
+            balance: withdrawAmount // This should match the field in AccountRequestDto
         })
             .then(response => {
                 Swal.fire({
@@ -152,7 +161,7 @@
                     text: `Successfully withdrew $${withdrawAmount.toFixed(2)} from account ${accountNumber}.`,
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    location.reload();
+                    location.reload(); // Refresh the page or redirect if needed
                 });
             })
             .catch(error => {
