@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .register-container {
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <h2 class="form-title"><i class="fas fa-user-plus"></i> Register</h2>
+    <form onsubmit="registerUser(event)">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+            <label for="dui">DUI</label>
+            <input type="text" class="form-control" id="dui" placeholder="XXXXXXXX-X" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email" pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" title="Please enter a valid email address" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Create a password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-3"><i class="fas fa-user-check"></i> Register</button>
+    </form>
+    <div class="text-center mt-3">
+        <a href="/login">Already have an account? Log in</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('dui').addEventListener('input', function (event) {
+        // Enforce DUI format XXXXXXXX-X
+        let value = this.value.replace(/[^0-9-]/g, ''); // Remove non-numeric and non-hyphen characters
+        value = value.replace(/^(\d{8})(\d)/, '$1-$2'); // Add hyphen after 8 numbers if not already present
+        if (value.length > 10) {
+            value = value.slice(0, 10); // Limit to 10 characters (8 digits + hyphen + 1 digit)
+        }
+        this.value = value;
+    });
+
+    function registerUser(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const dui = document.getElementById('dui').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        axios.post('/api/users/register', {
+            name: name,
+            dui: dui,
+            email: email,
+            password: password,
+            role: 'CLIENT'  // Setting the role as CLIENT
+        })
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registration Successful',
+                    text: 'You can now log in with your new account!',
+                    confirmButtonText: 'Go to Login'
+                }).then(() => {
+                    window.location.href = '/login'; // Redirect to login page
+                });
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: error.response ? error.response.data : 'Unknown error occurred',
+                    confirmButtonText: 'Try Again'
+                });
+            });
+    }
+</script>
+</body>
+</html>

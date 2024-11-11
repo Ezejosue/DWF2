@@ -2,9 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register client</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function registerUser(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const dui = document.getElementById('dui').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            axios.post('/api/users/register', {
+                name: name,
+                dui: dui,
+                email: email,
+                password: password,
+                role: 'CLIENT'  // Setting the role as CLIENT
+            })
+                .then(response => {
+                    alert('Registration successful! You can now log in.');
+                    window.location.href = '/login'; // Redirect to login page
+                })
+                .catch(error => {
+                    console.error('Registration error:', error);
+                    alert('Registration failed: ' + (error.response ? error.response.data : 'Unknown error'));
+                });
+        }
+    </script>
 </head>
 <body>
-
+<div class="container mt-5">
+    <h2 class="text-center">Register</h2>
+    <form onsubmit="registerUser(event)">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" class="form-control" id="name" required>
+        </div>
+        <div class="form-group">
+            <label for="dui">DUI</label>
+            <input type="text" class="form-control" id="dui" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-3">Register</button>
+    </form>
+    <div class="text-center mt-3">
+        <a href="/login">Back to Login</a>
+    </div>
+</div>
 </body>
 </html>

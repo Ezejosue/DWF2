@@ -31,6 +31,7 @@ public class AccountService {
 
     @Transactional
     public AccountRequestDto createAccount(AccountRequestDto accountRequestDto) {
+        System.out.println("AccountrequestDto: " + accountRequestDto);
         if (!userService.existsByDui(accountRequestDto.getDui())) {
             throw new IllegalArgumentException("User with this DUI does not exist");
         }
@@ -40,6 +41,46 @@ public class AccountService {
         return convertToDto(accountRepository.save(account));
     }
 
+    @Transactional
+    public AccountRequestDto depositFunds(String accountNumber, double amount) {
+        // Fetch the account by its number
+        Account account = accountRepository.findByAccountNumber(accountNumber);
+
+        // Update the account balance
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be greater than zero");
+        }
+
+        account.setBalance(account.getBalance() + amount);
+        Account updatedAccount = accountRepository.save(account);
+
+        // Convert to DTO for response
+        return convertToDto(updatedAccount);
+    }
+
+    @Transactional
+    public AccountRequestDto withdrawFunds(String accountNumber, double amount) {
+        // Fetch the account by its number
+        Account account = accountRepository.findByAccountNumber(accountNumber);
+
+        // Validate that the withdrawal amount is greater than zero and that the account has sufficient funds
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be greater than zero");
+        }
+        if (account.getBalance() < amount) {
+            throw new IllegalArgumentException("Insufficient funds for withdrawal");
+        }
+
+        // Deduct the amount from the account's balance
+        account.setBalance(account.getBalance() - amount);
+        Account updatedAccount = accountRepository.save(account);
+
+        // Convert to DTO for response
+        return convertToDto(updatedAccount);
+    }
+
+
+
     private AccountRequestDto convertToDto(Account account) {
         AccountRequestDto accountRequestDto = new AccountRequestDto();
         accountRequestDto.setAccountNumber(account.getAccountNumber());
@@ -48,6 +89,5 @@ public class AccountService {
         accountRequestDto.setDui(account.getUser().getDui());
         return accountRequestDto;
     }
-
 
 }

@@ -5,82 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cajero Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-    <script>
-        function getUserRole() {
-            axios.get('/api/users/user/roles')
-                .then(response => {
-                    console.log('User Role:', response.data);
-                    document.getElementById('user-role').textContent = response.data;  // Display the user role on the page
-                })
-                .catch(error => {
-                    console.error('Error fetching user role:', error);
-                    alert('Error fetching user role');
-                });
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
         }
-
-        function getUserName() {
-            axios.get('/api/users/user/roles')
-                .then(response => {
-                    console.log('User Role:', response.data);
-                    document.getElementById('user-role').textContent = response.data;  // Display the user role on the page
-                })
-                .catch(error => {
-                    console.error('Error fetching user role:', error);
-                    alert('Error fetching user role');
-                });
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        document.addEventListener('DOMContentLoaded', getUserRole);
-        // document.addEventListener('DOMContentLoaded', getUserName);
-    </script>
+        .sidebar .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-link {
+            display: block;
+            width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 30px;
+            background-color: #495057;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #6c757d;
+        }
+        .sidebar .logout-btn {
+            margin-top: auto;
+            width: 80%;
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sidebar .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-3 bg-light border-right p-3">
-            <div class="text-center mb-3">
-                <a href="/cajero/dashboard">
-                    <img src="/path/to/user-profile.jpg" alt="Profile" class="rounded-circle" width="100">
-                </a>
-            </div>
-            <div class="text-center mb-3">
-                <button class="btn btn-danger btn-block" onclick="window.location.href='/logout'">Log Out</button>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2">
-                    <a class="nav-link" href="/cajero/register-client">
-                        <i class="fas fa-user-plus"></i> Register New Client
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" href="/cajero/register-dependent">
-                        <i class="fas fa-user-friends"></i> Register New Dependent
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" href="/cajero/manage-loaners-funds">
-                        <i class="fas fa-money-check-alt"></i> Manage Loaners' Funds
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" href="/cajero/open-loan">
-                        <i class="fas fa-folder-open"></i> Open a New Loan
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Dashboard Content -->
-        <div class="col-9">
-            <h1 class="mt-4">Welcome to Your Dashboard</h1>
-            <p>Here, you can view and manage your account activities.</p>
-            <p><strong>User Role:</strong> <span id="user-role">Loading...</span></p> <!-- Displays the user's role -->
-            <p><strong>User Name:</strong> <span id="user-name">Loading...</span></p> <!-- Displays the user's role -->
-        </div>
+<div class="d-flex">
+    <div class="sidebar">
+        <img src="/path/to/profile.jpg" alt="Profile Image" class="profile-img" onclick="window.location.href='/cajero/dashboard'">
+        <a href="/cajero/register-client" class="nav-link"><i class="fas fa-user-plus"></i> Register New Client</a>
+        <a href="/cajero/register-dependent" class="nav-link"><i class="fas fa-user-friends"></i> Register New Dependent</a>
+        <a href="/cajero/manage-loaners" class="nav-link"><i class="fas fa-money-check-alt"></i> Manage Loaners' Funds</a>
+        <a href="/cajero/open-loan" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Open a New Loan</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+    </div>
+    <div class="flex-grow-1 p-4">
+        <!-- Main content of the dashboard goes here -->
+        <h1>Welcome to the Cajero Dashboard</h1>
+        <p>Use the navigation on the left to manage your operations.</p>
     </div>
 </div>
 </body>

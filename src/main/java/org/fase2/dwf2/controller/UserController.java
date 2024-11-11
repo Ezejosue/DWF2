@@ -10,6 +10,7 @@ import org.fase2.dwf2.dto.Login.LoginRequestDto;
 import org.fase2.dwf2.dto.Login.LoginResponseDto;
 import org.fase2.dwf2.dto.Login.RegisterRequestDto;
 import org.fase2.dwf2.dto.UserDto;
+import org.fase2.dwf2.enums.Role;
 import org.fase2.dwf2.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,6 +101,7 @@ public class UserController{
         if (userService.existsByEmail(registerRequest.getEmail())) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Email is already in use").build();
         }
+        registerRequest.setRole(Role.CLIENT);
         registerRequest.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         UserDto newUser = userService.save(registerRequest);
         return Response.status(Response.Status.CREATED).entity(newUser).build();
@@ -164,6 +166,23 @@ public class UserController{
             return Response.ok("Roles: " + roles).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("User not authenticated").build();
+    }
+
+    @GET
+    @Path("/current")
+    @Operation(summary = "Get current user", description = "Returns the profile of the current user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Current user retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public Response getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String email = authentication.getName(); // Assuming the email is used as the username
+            Optional<UserDto> userDto = userService.findByEmail(email);
+            return Response.ok(userDto).build();
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).entity("User is not authenticated").build();
     }
 
     @GET

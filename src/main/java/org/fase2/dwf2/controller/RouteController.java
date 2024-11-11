@@ -53,10 +53,18 @@ public class RouteController {
     }
 
     @GET
+    @Path("/register")
+    public Response getRegister() {
+        return Response.ok(new File("src/main/resources/static/reg-new-client.html")).build();
+    }
+
+    @GET
     @Path("/unauthorized")
     public Response getUnauthorized() {
         return Response.ok(new File("src/main/resources/static/unauthorized.html")).build();
     }
+
+    // EMPIEZAN CLIENTES
 
     @GET
     @Path("/client/dashboard")
@@ -65,6 +73,37 @@ public class RouteController {
         return Response.ok(new File("src/main/resources/static/cliente/dashboard.html")).build();
     }
 
+    @GET
+    @Path("/client/deposit-funds")
+    @RolesAllowed("CLIENT")
+    public Response getClientDepositFunds() {
+        return Response.ok(new File("src/main/resources/static/cliente/deposit-funds.html")).build();
+    }
+
+    @GET
+    @Path("/client/withdraw-funds")
+    @RolesAllowed("CLIENT")
+    public Response getClientWithdrawFunds() {
+        return Response.ok(new File("src/main/resources/static/cliente/withdraw-funds.html")).build();
+    }
+
+    @GET
+    @Path("/client/make-transaction")
+    @RolesAllowed("CLIENT")
+    public Response getClientMakeTransaction() {
+        return Response.ok(new File("src/main/resources/static/cliente/make-transaction.html")).build();
+    }
+
+    @GET
+    @Path("/client/transaction-history")
+    @RolesAllowed("CLIENT")
+    public Response getClientTransactionHistory() {
+        return Response.ok(new File("src/main/resources/static/cliente/transaction-history.html")).build();
+    }
+
+    // TERMINA CLIENTES
+
+//    EMPIEZA DEPENDIENTES
     @GET
     @Path("/dependiente/dashboard")
     @RolesAllowed("DEPENDIENTE")

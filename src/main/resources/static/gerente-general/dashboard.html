@@ -2,9 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Manager Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-link {
+            display: block;
+            width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 30px;
+            background-color: #495057;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #6c757d;
+        }
+        .sidebar .logout-btn {
+            margin-top: auto;
+            width: 80%;
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sidebar .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 <body>
-
+<div class="d-flex">
+    <div class="sidebar">
+        <img src="/path/to/profile.jpg" alt="Profile Image" class="profile-img" onclick="window.location.href='/gerente-general/dashboard'">
+        <a href="/gerente-general/pending-personnel-actions" class="nav-link"><i class="fas fa-tasks"></i> Pending personnel actions</a>
+        <a href="/gerente-general/manage-franchises" class="nav-link"><i class="fas fa-store-alt"></i> Manage Franchises</a>
+        <a href="/gerente-general/manage-global-transactions" class="nav-link"><i class="fas fa-globe"></i> Manage Global Transactions</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+    </div>
+    <div class="flex-grow-1 p-4">
+        <!-- Main content of the dashboard goes here -->
+        <h1>Welcome to the General Manager Dashboard</h1>
+        <p>Use the navigation on the left to manage company-wide activities and monitor global operations.</p>
+    </div>
+</div>
 </body>
 </html>
