@@ -91,48 +91,55 @@ public class TransactionService {
             throw new IllegalArgumentException("Amount must be greater than 0");
         }
 
-        // Retrieve accounts from the repository
+        // Retrieve source account
         Account accountFrom = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumber());
-        Account accountTo = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumberTo());
-
-        // Validate accounts' existence
         if (accountFrom == null) {
             throw new IllegalArgumentException("Source account does not exist");
         }
-        if (accountTo == null) {
-            throw new IllegalArgumentException("Destination account does not exist");
-        }
-        // Prevent transferring to the same account
-        if (accountFrom.getAccountNumber().equals(accountTo.getAccountNumber())) {
-            throw new IllegalArgumentException("Cannot transfer to the same account");
+
+        Account accountTo = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumberTo());
+        boolean isInternalTransaction = accountTo != null;
+
+        // Handle internal transactions
+        if (isInternalTransaction) {
+            // Prevent transferring to the same account
+            if (accountFrom.getAccountNumber().equals(accountTo.getAccountNumber())) {
+                throw new IllegalArgumentException("Cannot transfer to the same account");
+            }
+
+            // Check if the source account has sufficient funds
+            if (accountFrom.getBalance() < transactionRequestDto.getAmount()) {
+                throw new IllegalArgumentException("Insufficient funds");
+            }
+
+            // Update target account balance
+            accountTo.setBalance(accountTo.getBalance() + transactionRequestDto.getAmount());
+            accountRepository.save(accountTo);
+        } else {
+            // Handle external transactions
+            // Ensure the target account number is numeric
+            if (!transactionRequestDto.getAccountNumberTo().matches("\\d+")) {
+                throw new IllegalArgumentException("Invalid external account number. Must contain numbers only.");
+            }
         }
 
-        // Check if the source account has sufficient funds
-        if (accountFrom.getBalance() < transactionRequestDto.getAmount()) {
-            throw new IllegalArgumentException("Insufficient funds");
-        }
+        // Deduct funds from the source account
+        accountFrom.setBalance(accountFrom.getBalance() - transactionRequestDto.getAmount());
+        accountRepository.save(accountFrom);
 
-        // Create and save the transaction
+        // Log the transaction
         Transaction transaction = new Transaction();
         transaction.setAmount(transactionRequestDto.getAmount());
         transaction.setTransactionType(TransactionType.TRANSFER);
         transaction.setAccount(accountFrom);
-        transaction.setAccountTo(accountTo);
+        transaction.setAccountTo(isInternalTransaction ? accountTo : null); // Set accountTo only for internal transactions
         transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
-        // Update account balances and save them
-        accountFrom.setBalance(accountFrom.getBalance() - transactionRequestDto.getAmount());
-        accountRepository.save(accountFrom);
-
-        accountTo.setBalance(accountTo.getBalance() + transactionRequestDto.getAmount());
-        accountRepository.save(accountTo);
-
-        // Return DTO with updated information
+        // Return updated transaction details
         transactionRequestDto.setTransactionType(TransactionType.TRANSFER.toString());
         return transactionRequestDto;
     }
-
 
     @Transactional(readOnly = true)
     public List<TransactionRequestDto> getTransactions(String accountNumber) {

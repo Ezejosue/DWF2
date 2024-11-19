@@ -20,6 +20,7 @@
                     if (response.status === 200) {
 
                         const userRole = response.data.role;
+                        console.log("userRole 1: "+userRole);
                         // Display SweetAlert confirmation
                         Swal.fire({
                             title: 'Success!',
@@ -28,7 +29,7 @@
                             confirmButtonText: 'OK'
                         }).then(() => {
                             // Redirect to their respective dashboards
-
+                            console.log("userRole: "+userRole);
                             switch (userRole) {
                                 case 'CLIENT':
                                     window.location.href = '/client/dashboard';

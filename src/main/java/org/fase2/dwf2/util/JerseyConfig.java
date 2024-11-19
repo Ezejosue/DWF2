@@ -4,8 +4,10 @@ import org.fase2.dwf2.controller.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springdoc.webmvc.api.OpenApiResource;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 
 @Configuration
@@ -20,6 +22,8 @@ public class JerseyConfig extends ResourceConfig {
 
 
         // Agregar un proveedor de Jackson para la serialización JSON
+        register(SpringBeanAutowiringSupport.class);
+        property(ServletProperties.FILTER_FORWARD_ON_404, true);
         register(JacksonFeature.class);
         register(JacksonJaxbJsonProvider.class);
         register(OpenApiResource.class);

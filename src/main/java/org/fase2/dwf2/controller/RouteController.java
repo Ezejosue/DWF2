@@ -64,12 +64,19 @@ public class RouteController {
         return Response.ok(new File("src/main/resources/static/unauthorized.html")).build();
     }
 
+    @GET
+    @Path("/access-denied")
+    public Response getAccessDenied() {
+        return Response.ok(new File("src/main/resources/static/access-denied.html")).build();
+    }
+
     // EMPIEZAN CLIENTES
 
     @GET
     @Path("/client/dashboard")
     @RolesAllowed("CLIENT")
     public Response getClientDashboard() {
+        System.out.println("Client dashboard");
         return Response.ok(new File("src/main/resources/static/cliente/dashboard.html")).build();
     }
 
@@ -110,6 +117,45 @@ public class RouteController {
     public Response getDependienteDashboard() {
         return Response.ok(new File("src/main/resources/static/dependiente/dashboard.html")).build();
     }
+
+    @GET
+    @Path("/dependiente/deposit-funds")
+    @RolesAllowed("DEPENDIENTE")
+    public Response getDependienteDepositFunds() {
+        return Response.ok(new File("src/main/resources/static/dependiente/deposit-funds.html")).build();
+    }
+
+    @GET
+    @Path("/dependiente/withdraw-funds")
+    @RolesAllowed("DEPENDIENTE")
+    public Response getDependienteWithdrawFunds() {
+        return Response.ok(new File("src/main/resources/static/dependiente/withdraw-funds.html")).build();
+    }
+
+    @GET
+    @Path("/dependiente/make-transaction")
+    @RolesAllowed("DEPENDIENTE")
+    public Response getDependienteMakeTransaction() {
+        return Response.ok(new File("src/main/resources/static/dependiente/make-transaction.html")).build();
+    }
+
+    @GET
+    @Path("/dependiente/transaction-history")
+    @RolesAllowed("DEPENDIENTE")
+    public Response getDependienteTransactionHistory() {
+        return Response.ok(new File("src/main/resources/static/dependiente/transaction-history.html")).build();
+    }
+
+    @GET
+    @Path("/dependiente/special-services")
+    @RolesAllowed("DEPENDIENTE")
+    public Response getDependienteSpecialServices() {
+        return Response.ok(new File("src/main/resources/static/dependiente/special-services.html")).build();
+    }
+
+    // TERMINA DEPENDIENTES
+
+    // EMPIEZAN CAJEROS
 
     @GET
     @Path("/cajero/dashboard")

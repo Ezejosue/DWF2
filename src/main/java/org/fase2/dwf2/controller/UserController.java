@@ -3,7 +3,10 @@ package org.fase2.dwf2.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.fase2.dwf2.dto.Login.LoginRequestDto;
@@ -21,6 +24,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +64,7 @@ public class UserController{
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    public Response login(LoginRequestDto loginRequest) {
+    public Response login(LoginRequestDto loginRequest, @Context HttpServletRequest request) {
         Optional<UserDto> user = userService.findByEmail(loginRequest.getEmail());
 
         if (user.isEmpty()) {
@@ -76,9 +80,17 @@ public class UserController{
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Debug log to verify role
+        SecurityContextHolder.getContext().setAuthentication(authentication); // Save authentication
+
+        // Attach the SecurityContext to the session
+        HttpSession session = request.getSession(true); // Create a session if one doesn't exist
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+                SecurityContextHolder.getContext());
+
+        System.out.println("Session ID: " + session.getId());
+
+        // Verify role
         authentication.getAuthorities().forEach(authority -> {
             System.out.println("Assigned Role: " + authority.getAuthority());
         });
@@ -178,9 +190,14 @@ public class UserController{
     public Response getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            String email = authentication.getName(); // Assuming the email is used as the username
-            Optional<UserDto> userDto = userService.findByEmail(email);
-            return Response.ok(userDto).build();
+            String email = authentication.getName(); // Get the email of the authenticated user
+            Optional<UserDto> userDtoOptional = userService.findByEmail(email);
+
+            if (userDtoOptional.isPresent()) {
+                UserDto userDto = userDtoOptional.get();
+                System.out.println("UserDto: " + userDto); // Log for verification
+                return Response.ok(userDto).build(); // Return the UserDto directly
+            }
         }
         return Response.status(Response.Status.UNAUTHORIZED).entity("User is not authenticated").build();
     }

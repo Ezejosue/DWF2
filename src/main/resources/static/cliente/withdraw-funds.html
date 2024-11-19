@@ -64,29 +64,40 @@
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <img src="/img/" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
-        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make Transaction</a>
-        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit Funds</a>
-        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw Funds</a>
-        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction History</a>
-        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
+        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make transaction</a>
+        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit funds</a>
+        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw funds</a>
+        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction history</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
-    <div class="flex-grow-1 p-4">
-        <h2>Withdraw Funds</h2>
-        <form id="withdraw-form" class="mt-4">
-            <div class="form-group">
-                <label for="account-select">Select Account</label>
-                <select class="form-control" id="account-select" required>
-                    <option value="">Select an account</option>
-                </select>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Withdraw Funds</h4>
             </div>
-            <div class="form-group">
-                <label for="withdraw-amount">Amount to Withdraw</label>
-                <input type="number" class="form-control" id="withdraw-amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+            <div class="card-body">
+                <form id="withdraw-form">
+                    <!-- Select Account -->
+                    <div class="form-group">
+                        <label for="account-select">Select Account:</label>
+                        <select class="form-control" id="account-select" required>
+                            <!-- Dynamically populate user's accounts -->
+                        </select>
+                    </div>
+
+                    <!-- Enter Amount -->
+                    <div class="form-group">
+                        <label for="withdraw-amount">Amount:</label>
+                        <input type="number" class="form-control" id="withdraw-amount" step="0.01" placeholder="Enter amount" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Withdraw</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-danger mt-3">Withdraw</button>
-        </form>
+        </div>
     </div>
+
 </div>
 
 <script>
@@ -131,10 +142,11 @@
     // Handle the form submission
     document.getElementById('withdraw-form').addEventListener('submit', function (event) {
         event.preventDefault();
+
         const accountNumber = document.getElementById('account-select').value;
         const withdrawAmount = parseFloat(document.getElementById('withdraw-amount').value);
 
-        // Ensure that the amount is a valid number
+        // Validate the input
         if (!accountNumber || withdrawAmount <= 0 || isNaN(withdrawAmount)) {
             Swal.fire({
                 icon: 'warning',
@@ -144,15 +156,16 @@
             return;
         }
 
-        // Log the data being sent to check the payload
+        // Log the data being sent
         console.log('Sending withdrawal request:', {
             accountNumber: accountNumber,
-            balance: withdrawAmount // Ensure the key matches the DTO field
+            amount: withdrawAmount // Match DTO field
         });
 
-        axios.post('/api/account/withdraw', {
-            accountNumber: accountNumber,
-            balance: withdrawAmount // This should match the field in AccountRequestDto
+        // Send the withdrawal request to the TransactionController endpoint
+        axios.post('/api/transaction/withdraw', {
+            accountNumber: accountNumber, // Account to withdraw from
+            amount: withdrawAmount // Amount to withdraw
         })
             .then(response => {
                 Swal.fire({
@@ -161,7 +174,7 @@
                     text: `Successfully withdrew $${withdrawAmount.toFixed(2)} from account ${accountNumber}.`,
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    location.reload(); // Refresh the page or redirect if needed
+                    location.reload(); // Reload to update the balance
                 });
             })
             .catch(error => {
@@ -173,6 +186,7 @@
                 });
             });
     });
+
 </script>
 </body>
 </html>

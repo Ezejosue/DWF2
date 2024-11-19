@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Dashboard</title>
+    <title>Dependent Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -64,16 +64,17 @@
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <img src="/img/" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
-        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make Transaction</a>
-        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit Funds</a>
-        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw Funds</a>
-        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction History</a>
-        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/dependiente/dashboard'">
+        <a href="/dependiente/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make transaction</a>
+        <a href="/dependiente/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit funds</a>
+        <a href="/dependiente/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw funds</a>
+        <a href="/dependiente/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction history</a>
+        <a href="/dependiente/special-services" class="nav-link"><i class="fas fa-key"></i> Special services</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
     <div class="flex-grow-1 p-4">
-        <h2>Welcome to Your Dashboard</h2>
-        <h4>Your Bank Accounts</h4>
+        <h2 id="welcome-sign"></h2>
+        <h4>Your bank accounts</h4>
         <div id="accounts-container" class="mt-3">
             <!-- Accounts aparecen aquí -->
         </div>
@@ -83,7 +84,7 @@
 
     // Function to format the account number in groups of 4 digits
     function formatAccountNumber(accountNumber) {
-        return accountNumber.replace(/(\d{4})(?=\d)/g, '$1-');
+        return accountNumber.replace(/(\d{3})(?=\d)/g, '$1-');
     }
 
     // Fetch the current logged-in user's email and DUI
@@ -91,12 +92,14 @@
         .then(response => {
             const userEmail = response.data.email;
             const userDui = response.data.dui; // Assuming the response includes the DUI
+            const userName = response.data.name;
             const container = document.getElementById('accounts-container');
 
             // Use the fetched email to get associated bank accounts
             axios.get(`/api/account/${encodeURIComponent(userEmail)}`)
                 .then(response => {
                     const accounts = response.data;
+                    document.getElementById('welcome-sign').textContent += `Welcome, ${userName}`;
 
                     if (accounts.length === 0) {
                         container.innerHTML = '<p>No accounts found.</p>';
@@ -145,7 +148,7 @@
         axios.post('/api/account', {
             accountNumber: randomAccountNumber,
             userEmail: userEmail,
-            balance: 0.0, // Initial balance can be set as desired
+            balance: 0.0, // Initial balance
             dui: userDui // Include the user's DUI
         })
             .then(response => {

@@ -64,30 +64,40 @@
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <img src="/img/" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
-        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make Transaction</a>
-        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit Funds</a>
-        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw Funds</a>
-        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction History</a>
-        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
+        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make transaction</a>
+        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit funds</a>
+        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw funds</a>
+        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction history</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
-    <div class="flex-grow-1 p-4">
-        <h2>Deposit Funds</h2>
-        <form id="deposit-form" class="mt-4">
-            <div class="form-group">
-                <label for="account-select">Select Account</label>
-                <select class="form-control" id="account-select" required>
-                    <option value="">Select an account</option>
-                    <!-- Options will be populated dynamically -->
-                </select>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Deposit Funds</h4>
             </div>
-            <div class="form-group">
-                <label for="deposit-amount">Amount to Deposit</label>
-                <input type="number" class="form-control" id="deposit-amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+            <div class="card-body">
+                <form id="deposit-form">
+                    <!-- Select Account -->
+                    <div class="form-group">
+                        <label for="account-select">Select Account:</label>
+                        <select class="form-control" id="account-select" required>
+                            <!-- Dynamically populate user's accounts -->
+                        </select>
+                    </div>
+
+                    <!-- Enter Amount -->
+                    <div class="form-group">
+                        <label for="deposit-amount">Amount:</label>
+                        <input type="number" class="form-control" id="deposit-amount" step="0.01" placeholder="Enter amount" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Deposit</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Deposit</button>
-        </form>
+        </div>
     </div>
+
 </div>
 
 <script>
@@ -132,6 +142,7 @@
     // Handle the form submission
     document.getElementById('deposit-form').addEventListener('submit', function (event) {
         event.preventDefault();
+
         const accountNumber = document.getElementById('account-select').value;
         const depositAmount = parseFloat(document.getElementById('deposit-amount').value);
 
@@ -144,15 +155,15 @@
             return;
         }
 
-        // Testeeeeeo
-        console.log('Sending deposit:', {
+        console.log('Sending deposit request:', {
             accountNumber: accountNumber,
-            balance: depositAmount
+            amount: depositAmount // Updated to match TransactionRequestDto structure
         });
 
-        axios.post('/api/account/deposit', {
+        // Send the deposit request to the correct TransactionController endpoint
+        axios.post('/api/transaction/deposit', {
             accountNumber: accountNumber,
-            balance: depositAmount
+            amount: depositAmount // Updated field name
         })
             .then(response => {
                 Swal.fire({
@@ -161,7 +172,7 @@
                     text: `Successfully deposited $${depositAmount.toFixed(2)} to account ${accountNumber}.`,
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    location.reload();
+                    location.reload(); // Reload the page to update UI with new balance
                 });
             })
             .catch(error => {
@@ -173,6 +184,7 @@
                 });
             });
     });
+    ;
 </script>
 </body>
 </html>

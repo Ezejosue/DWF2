@@ -64,48 +64,72 @@
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <img src="/img/" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
-        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make Transaction</a>
-        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit Funds</a>
-        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw Funds</a>
-        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction History</a>
-        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/client/dashboard'">
+        <a href="/client/make-transaction" class="nav-link"><i class="fas fa-exchange-alt"></i> Make transaction</a>
+        <a href="/client/deposit-funds" class="nav-link"><i class="fas fa-coins"></i> Deposit funds</a>
+        <a href="/client/withdraw-funds" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Withdraw funds</a>
+        <a href="/client/transaction-history" class="nav-link"><i class="fas fa-history"></i> Transaction history</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
-    <div class="flex-grow-1 p-4">
-        <h2>Make a Transaction</h2>
-        <form id="transaction-form" class="mt-4">
-            <div class="form-group">
-                <label for="from-account-select">Select Source Account</label>
-                <select class="form-control" id="from-account-select" required>
-                    <option value="">Select your source account</option>
-                    <!-- Options will be populated dynamically -->
-                </select>
+    <div class="container flex-grow-1 p-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Make a Transaction</h4>
             </div>
-            <div class="form-group">
-                <label for="transaction-type">Select Transaction Type</label>
-                <select class="form-control" id="transaction-type" required>
-                    <option value="">Choose transaction type</option>
-                    <option value="own">Transfer to your own account</option>
-                    <option value="third-party">Transfer to a third-party account</option>
-                </select>
+            <div class="card-body">
+                <form id="transaction-form">
+                    <!-- Transaction Type -->
+                    <div class="form-group">
+                        <label for="transaction-type">Transaction Type</label>
+                        <select class="form-control" id="transaction-type" name="transactionType" required>
+                            <option value="" disabled selected>Select transaction type</option>
+                            <option value="own">My Accounts</option>
+                            <option value="other">Other Users' Accounts</option>
+                            <option value="external">External Accounts</option>
+                        </select>
+                    </div>
+
+                    <!-- From Account -->
+                    <div class="form-group">
+                        <label for="from-account-select">From Account</label>
+                        <select class="form-control" id="from-account-select" required>
+                            <option value="" disabled selected>Select your account</option>
+                            <!-- Dynamically populated accounts -->
+                        </select>
+                    </div>
+
+                    <!-- To Account: My Accounts -->
+                    <div id="own-account-group" class="form-group" style="display: none;">
+                        <label for="own-account-select">To Account</label>
+                        <select class="form-control" id="own-account-select">
+                            <option value="" disabled selected>Select your account</option>
+                            <!-- Dynamically populated user's other accounts -->
+                        </select>
+                    </div>
+
+                    <!-- To Account: Other Users -->
+                    <div id="other-account-group" class="form-group" style="display: none;">
+                        <label for="other-account">To Account Number</label>
+                        <input type="text" class="form-control" id="other-account" placeholder="Enter account number" />
+                    </div>
+
+                    <!-- To Account: External -->
+                    <div id="external-account-group" class="form-group" style="display: none;">
+                        <label for="external-account">External Account Number</label>
+                        <input type="text" class="form-control" id="external-account" placeholder="Enter external account number"/>
+                    </div>
+
+                    <!-- Transaction Amount -->
+                    <div class="form-group">
+                        <label for="transaction-amount">Amount</label>
+                        <input type="number" class="form-control" id="transaction-amount" step="0.01" placeholder="Enter amount" required />
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-block">Transfer</button>
+                </form>
             </div>
-            <div class="form-group" id="own-account-group" style="display: none;">
-                <label for="own-account-select">Select Your Destination Account</label>
-                <select class="form-control" id="own-account-select">
-                    <option value="">Select an account</option>
-                    <!-- Options will be populated dynamically -->
-                </select>
-            </div>
-            <div class="form-group" id="third-party-account-group" style="display: none;">
-                <label for="third-party-account">Third-Party Account Number</label>
-                <input type="text" class="form-control" id="third-party-account" placeholder="Enter third-party account number">
-            </div>
-            <div class="form-group">
-                <label for="transaction-amount">Amount to Transfer</label>
-                <input type="number" class="form-control" id="transaction-amount" placeholder="Enter amount" min="0.01" step="0.01" required>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Submit Transaction</button>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -160,22 +184,38 @@
     // Show/hide input fields based on transaction type selection
     document.getElementById('transaction-type').addEventListener('change', function () {
         const transactionType = this.value;
+
+        // Show/hide groups based on the selected transaction type
         document.getElementById('own-account-group').style.display = transactionType === 'own' ? 'block' : 'none';
-        document.getElementById('third-party-account-group').style.display = transactionType === 'third-party' ? 'block' : 'none';
+        document.getElementById('other-account-group').style.display = transactionType === 'other' ? 'block' : 'none';
+        document.getElementById('external-account-group').style.display = transactionType === 'external' ? 'block' : 'none';
     });
 
-    // Handle form submission
     document.getElementById('transaction-form').addEventListener('submit', function (event) {
         event.preventDefault();
+
         const fromAccountNumber = document.getElementById('from-account-select').value;
         const transactionType = document.getElementById('transaction-type').value;
         const amount = parseFloat(document.getElementById('transaction-amount').value);
         let toAccountNumber;
 
+        // Determine the target account based on transaction type
         if (transactionType === 'own') {
             toAccountNumber = document.getElementById('own-account-select').value;
-        } else if (transactionType === 'third-party') {
-            toAccountNumber = document.getElementById('third-party-account').value;
+        } else if (transactionType === 'other') {
+            toAccountNumber = document.getElementById('other-account').value;
+        } else if (transactionType === 'external') {
+            toAccountNumber = document.getElementById('external-account').value;
+
+            // Validate external account number (must be numeric)
+            if (!/^\d+$/.test(toAccountNumber)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Input',
+                    text: 'External account number must be numeric.',
+                });
+                return;
+            }
         }
 
         if (!fromAccountNumber || !toAccountNumber || amount <= 0 || isNaN(amount)) {
@@ -187,19 +227,27 @@
             return;
         }
 
+        // Log for testing
+        console.log('Transaction details:', {
+            fromAccountNumber,
+            toAccountNumber,
+            amount,
+        });
+
+        // Send transaction request
         axios.post('/api/transaction/transfer', {
             accountNumber: fromAccountNumber, // Source account
             accountNumberTo: toAccountNumber, // Destination account
-            amount: amount
+            amount: amount,
         })
             .then(response => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Transaction Successful',
                     text: `Successfully transferred $${amount.toFixed(2)} to account ${toAccountNumber}.`,
-                    confirmButtonText: 'OK'
+                    confirmButtonText: 'OK',
                 }).then(() => {
-                    location.reload(); // Refresh the page or redirect if needed
+                    location.reload(); // Refresh the page
                 });
             })
             .catch(error => {
@@ -211,6 +259,8 @@
                 });
             });
     });
+
+
 </script>
 </body>
 </html>
