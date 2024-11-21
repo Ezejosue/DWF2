@@ -2,9 +2,14 @@ package org.fase2.dwf2.service;
 
 import org.fase2.dwf2.dto.Account.AccountRequestDto;
 import org.fase2.dwf2.dto.ManagedAccount.ManagedAccountDto;
+import org.fase2.dwf2.dto.UserDto;
 import org.fase2.dwf2.entities.Account;
+import org.fase2.dwf2.dto.Login.RegisterRequestDto;
+import org.fase2.dwf2.repository.IUserRepository;
+import org.fase2.dwf2.enums.Role;
 import org.fase2.dwf2.repository.IAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +21,10 @@ import java.util.stream.Collectors;
 public class AccountService {
     private final IAccountRepository accountRepository;
     private final UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private IUserRepository userRepository;
 
     @Autowired
     public AccountService(IAccountRepository accountRepository, UserService userService) {
@@ -44,11 +53,28 @@ public class AccountService {
 
     @Transactional
     public ManagedAccountDto createManagedAccount(AccountRequestDto accountRequestDto) {
+        // Step 1: Create the managed user using the register logic
+        RegisterRequestDto registerRequest = new RegisterRequestDto();
+        registerRequest.setEmail(accountRequestDto.getUserEmail());
+        registerRequest.setPassword(accountRequestDto.getPassword());
+        registerRequest.setName("Managed Client"); // Or fetch from accountRequestDto if provided
+        registerRequest.setDui(accountRequestDto.getDui());
+        registerRequest.setRole(Role.CLIENT);
+
+        // Use the register method to create the user
+        UserDto newUser = userService.save(registerRequest);
+
+        // Step 2: Create the account and associate it with the newly created user
         Account account = new Account();
-        account.setAccountNumber(generateUniqueAccountNumber()); // Generate account number
+        account.setAccountNumber(generateUniqueAccountNumber()); // Generate unique account number
         account.setBalance(accountRequestDto.getBalance());
-        account.setManagedByDui(accountRequestDto.getDui()); // Link to DEPENDIENTE's DUI
+        account.setManagedByDui(accountRequestDto.getDui()); // Link to the DEPENDIENTE's DUI
+        account.setUser(userRepository.findById(newUser.getId()).orElseThrow(() ->
+                new IllegalArgumentException("Failed to link user to account"))); // Link the created user to the account
+
         Account savedAccount = accountRepository.save(account);
+
+        // Step 3: Map to ManagedAccountDto and return
         return mapToManagedAccountDto(savedAccount);
     }
 

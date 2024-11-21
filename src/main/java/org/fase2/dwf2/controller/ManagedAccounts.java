@@ -8,6 +8,8 @@ import org.fase2.dwf2.dto.ManagedAccount.ManagedAccountDto;
 import org.fase2.dwf2.dto.Transaction.TransactionRequestDto;
 import org.fase2.dwf2.service.AccountService;
 import org.fase2.dwf2.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,7 +23,7 @@ public class ManagedAccounts {
     private final AccountService accountService;
     private final TransactionService transactionService;
 
-    public ManagedAccounts(AccountService accountService, TransactionService transactionService) {
+    public ManagedAccounts(AccountService accountService, TransactionService transactionService, PasswordEncoder passwordEncoder) {
         this.accountService = accountService;
         this.transactionService = transactionService;
     }

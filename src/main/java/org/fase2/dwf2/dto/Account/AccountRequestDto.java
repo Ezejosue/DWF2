@@ -7,5 +7,7 @@ public class AccountRequestDto {
     private String accountNumber;
     private String userEmail;
     private Double balance;
-    private String dui;
+    private String dui; // DEPENDIENTE's DUI
+    private String password; // New field for the password
 }
+

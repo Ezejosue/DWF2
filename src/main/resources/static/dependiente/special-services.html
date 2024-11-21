@@ -91,12 +91,23 @@
                     </div>
                     <div class="form-group">
                         <label for="client-dui">Client DUI:</label>
-                        <input type="text" class="form-control" id="client-dui" pattern="\\d{8}-\\d" placeholder="XXXXXXXX-X" required>
+                        <input type="text" class="form-control" id="client-dui" placeholder="XXXXXXXX-X" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-password">Password</label>
+                        <input
+                                type="password"
+                                id="client-password"
+                                class="form-control"
+                                placeholder="Enter a secure password"
+                                required
+                        />
                     </div>
                     <div class="form-group">
                         <label for="initial-deposit">Initial Deposit Amount:</label>
                         <input type="number" class="form-control" id="initial-deposit" step="0.01" required>
                     </div>
+                    <input type="hidden" id="dependiente-dui" value=`${}`> //SIGUE AQUÍ
                     <button type="submit" class="btn btn-success btn-block">Register Client</button>
                 </form>
                 <hr>
@@ -216,35 +227,45 @@
 
         const initialDeposit = parseFloat(document.getElementById('initial-deposit').value);
         const dependienteDui = document.getElementById('dependiente-dui').value;
+        const clientPassword = document.getElementById('client-password').value;
 
-        if (!initialDeposit || initialDeposit <= 0) {
+        // Log input values for debugging
+        console.log('Initial Deposit:', initialDeposit);
+        console.log('Dependiente DUI:', dependienteDui);
+        console.log('Client Password:', clientPassword);
+
+        // Validate inputs
+        if (!initialDeposit || initialDeposit <= 0 || !clientPassword) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid Input',
-                text: 'Please enter a positive initial deposit.',
+                text: 'Please enter a positive initial deposit and a secure password.',
             });
             return;
         }
 
+        // Make the API call
         axios.post('/api/cuentas/nueva', {
             balance: initialDeposit,
-            dui: dependienteDui, // Link to the DEPENDIENTE
+            dui: dependienteDui, // DEPENDIENTE's DUI
+            password: clientPassword, // Include password
         })
             .then(response => {
+                console.log('Response from API:', response.data); // Debug log for server response
                 Swal.fire({
                     icon: 'success',
                     title: 'Account Created',
                     text: `Successfully created a new account with an initial deposit of $${initialDeposit.toFixed(2)}.`,
                 }).then(() => {
-                    loadManagedAccounts(dependienteDui); // Refresh managed accounts list
+                    loadManagedAccounts(dependienteDui); // Refresh the list of managed accounts
                 });
             })
             .catch(error => {
-                console.error('Error creating account:', error);
+                console.error('Error creating account:', error); // Debug log for errors
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to create account. Please try again later.',
+                    text: error.response?.data || 'Failed to create account. Please try again later.',
                 });
             });
     });
