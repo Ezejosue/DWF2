@@ -72,69 +72,184 @@
         <a href="/dependiente/special-services" class="nav-link"><i class="fas fa-key"></i> Special services</a>
         <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
-    <div class="container flex-grow-1 p-4">
+    <div class="container mt-5">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Make a Transaction</h4>
+                <h4 class="mb-0">Special Services</h4>
             </div>
             <div class="card-body">
-                <form id="transaction-form">
-                    <!-- Transaction Type -->
+                <!-- User Registration Form -->
+                <h5>Register a New Client</h5>
+                <form id="register-client-form">
                     <div class="form-group">
-                        <label for="transaction-type">Transaction Type</label>
-                        <select class="form-control" id="transaction-type" name="transactionType" required>
-                            <option value="" disabled selected>Select transaction type</option>
-                            <option value="own">My Accounts</option>
-                            <option value="other">Other Users' Accounts</option>
-                            <option value="external">External Accounts</option>
-                        </select>
+                        <label for="client-name">Client Name:</label>
+                        <input type="text" class="form-control" id="client-name" required>
                     </div>
-
-                    <!-- From Account -->
                     <div class="form-group">
-                        <label for="from-account-select">From Account</label>
-                        <select class="form-control" id="from-account-select" required>
-                            <option value="" disabled selected>Select your account</option>
-                            <!-- Dynamically populated accounts -->
-                        </select>
+                        <label for="client-email">Client Email:</label>
+                        <input type="email" class="form-control" id="client-email" required>
                     </div>
-
-                    <!-- To Account: My Accounts -->
-                    <div id="own-account-group" class="form-group" style="display: none;">
-                        <label for="own-account-select">To Account</label>
-                        <select class="form-control" id="own-account-select">
-                            <option value="" disabled selected>Select your account</option>
-                            <!-- Dynamically populated user's other accounts -->
-                        </select>
-                    </div>
-
-                    <!-- To Account: Other Users -->
-                    <div id="other-account-group" class="form-group" style="display: none;">
-                        <label for="other-account">To Account Number</label>
-                        <input type="text" class="form-control" id="other-account" placeholder="Enter account number" />
-                    </div>
-
-                    <!-- To Account: External -->
-                    <div id="external-account-group" class="form-group" style="display: none;">
-                        <label for="external-account">External Account Number</label>
-                        <input type="text" class="form-control" id="external-account" placeholder="Enter external account number"/>
-                    </div>
-
-                    <!-- Transaction Amount -->
                     <div class="form-group">
-                        <label for="transaction-amount">Amount</label>
-                        <input type="number" class="form-control" id="transaction-amount" step="0.01" placeholder="Enter amount" required />
+                        <label for="client-dui">Client DUI:</label>
+                        <input type="text" class="form-control" id="client-dui" pattern="\\d{8}-\\d" placeholder="XXXXXXXX-X" required>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary btn-block">Transfer</button>
+                    <div class="form-group">
+                        <label for="initial-deposit">Initial Deposit Amount:</label>
+                        <input type="number" class="form-control" id="initial-deposit" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Register Client</button>
                 </form>
+                <hr>
+                <!-- List of Managed Clients -->
+                <h5>Managed Clients</h5>
+                <div id="managed-clients-list" class="mt-3">
+                    <!-- Dynamically populated list of clients -->
+                </div>
+                <div id="client-management-section" class="mt-4" style="display: none;">
+                    <h5>Manage Client</h5>
+                    <p id="client-info"></p>
+                    <form id="manage-client-form">
+                        <div class="form-group">
+                            <label for="transaction-type">Transaction Type:</label>
+                            <select class="form-control" id="transaction-type">
+                                <option value="deposit">Deposit</option>
+                                <option value="withdraw">Withdraw</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="transaction-amount">Amount:</label>
+                            <input type="number" class="form-control" id="transaction-amount" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
+
+    function loadManagedAccounts(dependienteDui) {
+        axios.get(`/api/cuentas/${encodeURIComponent(dependienteDui)}`)
+            .then(response => {
+                const managedAccounts = response.data;
+                const accountsContainer = document.getElementById('managed-accounts-list');
+                accountsContainer.innerHTML = ''; // Clear previous entries
+
+                if (managedAccounts.length === 0) {
+                    accountsContainer.innerHTML = '<p>No managed accounts found.</p>';
+                } else {
+                    managedAccounts.forEach(account => {
+                        const accountCard = document.createElement('div');
+                        accountCard.classList.add('card', 'mb-3');
+                        accountCard.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${account.clientName}</h5>
+                            <p class="card-text">Email: ${account.clientEmail}</p>
+                            <p class="card-text">Account Number: ${account.accountNumber}</p>
+                            <p class="card-text">Balance: $${account.balance.toFixed(2)}</p>
+                        </div>
+                    `;
+                        accountsContainer.appendChild(accountCard);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading managed accounts:', error);
+                document.getElementById('managed-accounts-list').innerHTML = '<p>Error loading accounts. Please try again later.</p>';
+            });
+    }
+
+    function showAccountManagement(accountNumber, clientName, balance) {
+        const managementSection = document.getElementById('account-management-section');
+        managementSection.style.display = 'block';
+
+        document.getElementById('client-info').textContent = `Managing account for ${clientName} (Balance: $${balance.toFixed(2)})`;
+
+        document.getElementById('manage-account-form').onsubmit = function (event) {
+            event.preventDefault();
+            const transactionType = document.getElementById('transaction-type').value;
+            const amount = parseFloat(document.getElementById('transaction-amount').value);
+
+            if (amount <= 0 || isNaN(amount)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Input',
+                    text: 'Please enter a positive amount.',
+                });
+                return;
+            }
+
+            const endpoint = transactionType === 'deposit'
+                ? '/api/cuentas/abonarefectivo'
+                : '/api/cuentas/retirarefectivo';
+
+            axios.post(endpoint, {
+                accountNumber: accountNumber,
+                amount: amount
+            })
+                .then(response => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: `${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)} Successful`,
+                        text: `$${amount.toFixed(2)} has been ${transactionType}ed for account ${accountNumber}.`,
+                    }).then(() => {
+                        loadManagedAccounts(document.getElementById('dependiente-dui').value); // Reload accounts
+                        managementSection.style.display = 'none'; // Hide the management section
+                    });
+                })
+                .catch(error => {
+                    console.error('Error processing transaction:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Transaction failed. Please try again later.',
+                    });
+                });
+        };
+    }
+
+    document.getElementById('register-client-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const initialDeposit = parseFloat(document.getElementById('initial-deposit').value);
+        const dependienteDui = document.getElementById('dependiente-dui').value;
+
+        if (!initialDeposit || initialDeposit <= 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Input',
+                text: 'Please enter a positive initial deposit.',
+            });
+            return;
+        }
+
+        axios.post('/api/cuentas/nueva', {
+            balance: initialDeposit,
+            dui: dependienteDui, // Link to the DEPENDIENTE
+        })
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Account Created',
+                    text: `Successfully created a new account with an initial deposit of $${initialDeposit.toFixed(2)}.`,
+                }).then(() => {
+                    loadManagedAccounts(dependienteDui); // Refresh managed accounts list
+                });
+            })
+            .catch(error => {
+                console.error('Error creating account:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to create account. Please try again later.',
+                });
+            });
+    });
+
+
     // Fetch the current logged-in user's email and populate the account dropdowns
     axios.get('/api/users/current')
         .then(response => {
@@ -182,81 +297,44 @@
             });
         });
 
-    // Show/hide input fields based on transaction type selection
-    document.getElementById('transaction-type').addEventListener('change', function () {
-        const transactionType = this.value;
-
-        // Show/hide groups based on the selected transaction type
-        document.getElementById('own-account-group').style.display = transactionType === 'own' ? 'block' : 'none';
-        document.getElementById('other-account-group').style.display = transactionType === 'other' ? 'block' : 'none';
-        document.getElementById('external-account-group').style.display = transactionType === 'external' ? 'block' : 'none';
-    });
-
-    document.getElementById('transaction-form').addEventListener('submit', function (event) {
+    document.getElementById('register-client-form').addEventListener('submit', function (event) {
         event.preventDefault();
+        const clientName = document.getElementById('client-name').value;
+        const clientEmail = document.getElementById('client-email').value;
+        const clientDui = document.getElementById('client-dui').value;
+        const initialDeposit = parseFloat(document.getElementById('initial-deposit').value);
 
-        const fromAccountNumber = document.getElementById('from-account-select').value;
-        const transactionType = document.getElementById('transaction-type').value;
-        const amount = parseFloat(document.getElementById('transaction-amount').value);
-        let toAccountNumber;
-
-        // Determine the target account based on transaction type
-        if (transactionType === 'own') {
-            toAccountNumber = document.getElementById('own-account-select').value;
-        } else if (transactionType === 'other') {
-            toAccountNumber = document.getElementById('other-account').value;
-        } else if (transactionType === 'external') {
-            toAccountNumber = document.getElementById('external-account').value;
-
-            // Validate external account number (must be numeric)
-            if (!/^\d+$/.test(toAccountNumber)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Input',
-                    text: 'External account number must be numeric.',
-                });
-                return;
-            }
-        }
-
-        if (!fromAccountNumber || !toAccountNumber || amount <= 0 || isNaN(amount)) {
+        if (!clientName || !clientEmail || !clientDui || initialDeposit <= 0 || isNaN(initialDeposit)) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid Input',
-                text: 'Please select valid accounts and enter a positive amount.',
+                text: 'Please fill all fields correctly.',
             });
             return;
         }
 
-        // Log for testing
-        console.log('Transaction details:', {
-            fromAccountNumber,
-            toAccountNumber,
-            amount,
-        });
-
-        // Send transaction request
-        axios.post('/api/transaction/transfer', {
-            accountNumber: fromAccountNumber, // Source account
-            accountNumberTo: toAccountNumber, // Destination account
-            amount: amount,
+        axios.post('/api/users/register', {
+            name: clientName,
+            email: clientEmail,
+            dui: clientDui,
+            balance: initialDeposit, // Pass initial deposit amount
+            role: 'CLIENT' // Ensure the role is set to CLIENT
         })
             .then(response => {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Transaction Successful',
-                    text: `Successfully transferred $${amount.toFixed(2)} to account ${toAccountNumber}.`,
-                    confirmButtonText: 'OK',
+                    title: 'Client Registered',
+                    text: `${clientName} has been successfully registered.`,
                 }).then(() => {
-                    location.reload(); // Refresh the page
+                    loadManagedClients(); // Refresh the list of managed clients
                 });
             })
             .catch(error => {
-                console.error('Error processing transaction:', error);
+                console.error('Error registering client:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Transaction Failed',
-                    text: error.response ? error.response.data : 'An error occurred. Please try again later.',
+                    title: 'Error',
+                    text: 'Failed to register client. Please try again later.',
                 });
             });
     });

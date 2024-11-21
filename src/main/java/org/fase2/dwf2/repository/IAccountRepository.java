@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface IAccountRepository extends JpaRepository<Account, Long> {
     Account findByAccountNumber(String accountNumber);
-
     List<Account> findByUserEmail(String email);
+    List<Account> findByManagedByDui(String managedByDui);
 }

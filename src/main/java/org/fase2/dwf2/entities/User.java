@@ -24,7 +24,7 @@ public class User {
     private String name;
 
     @Column(unique = true)
-    @Pattern(regexp = "\\d{8}-\\d", message = "El formato del DUI debe ser 06133168-2")
+    @Pattern(regexp = "\\d{8}-\\d", message = "El formato del DUI debe ser XXXXXXXX-X")
     private String dui;
 
     @Column(unique = true)

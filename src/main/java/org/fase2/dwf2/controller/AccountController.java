@@ -34,43 +34,4 @@ public class AccountController {
         return Response.ok(account).build();
     }
 
-    @POST
-    @Path("/deposit")
-    public Response depositFunds(AccountRequestDto accountRequestDto) {
-        System.out.println("AccountRequestDto: " + accountRequestDto);
-        if (accountRequestDto.getAccountNumber() == null || accountRequestDto.getBalance() == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Account number and amount are required").build();
-        }
-
-        try {
-            AccountRequestDto updatedAccount = accountService.depositFunds(
-                    accountRequestDto.getAccountNumber(),
-                    accountRequestDto.getBalance()
-            );
-            return Response.ok(updatedAccount).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        }
-    }
-
-    @POST
-    @Path("/withdraw")
-    public Response withdrawFunds(AccountRequestDto accountRequestDto) {
-        System.out.println("AccountRequestDto: " + accountRequestDto);
-        if (accountRequestDto.getAccountNumber() == null || accountRequestDto.getBalance() == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Account number and amount are required").build();
-        }
-
-        try {
-            AccountRequestDto updatedAccount = accountService.withdrawFunds(
-                    accountRequestDto.getAccountNumber(),
-                    accountRequestDto.getBalance()
-            );
-            return Response.ok(updatedAccount).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        }
-    }
-
-
 }

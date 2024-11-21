@@ -2,6 +2,7 @@ package org.fase2.dwf2.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,10 @@ public class Account {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transaction> transactions;
+
+    @Column(unique = true)
+    @Pattern(regexp = "\\d{8}-\\d", message = "El formato del DUI debe ser XXXXXXXX-X")
+    private String managedByDui;
 
     @PrePersist
     private void ensureAccountNumber() {

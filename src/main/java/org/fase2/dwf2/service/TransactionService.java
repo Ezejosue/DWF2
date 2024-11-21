@@ -166,4 +166,63 @@ private TransactionRequestDto mapToDto(Transaction transaction) {
     return dto;
 }
 
+    @Transactional
+    public TransactionRequestDto depositToManagedAccount(TransactionRequestDto transactionRequestDto) {
+        if (transactionRequestDto.getAmount() <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be greater than 0");
+        }
+
+        Account account = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumber());
+        if (account == null) {
+            throw new IllegalArgumentException("Account does not exist");
+        }
+        // Create transaction
+        Transaction transaction = new Transaction();
+        transaction.setAmount(transactionRequestDto.getAmount());
+        transaction.setTransactionType(TransactionType.DEPOSIT);
+        transaction.setAccount(account);
+        transaction.setTimestamp(LocalDateTime.now());
+        transactionRepository.save(transaction);
+
+        // Update account balance
+        account.setBalance(account.getBalance() + transactionRequestDto.getAmount());
+        accountRepository.save(account);
+
+        transactionRequestDto.setTransactionType(TransactionType.DEPOSIT.toString());
+        return transactionRequestDto;
+    }
+
+    @Transactional
+    public TransactionRequestDto withdrawFromManagedAccount(TransactionRequestDto transactionRequestDto) {
+        if (transactionRequestDto.getAmount() <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be greater than 0");
+        }
+
+        Account account = accountRepository.findByAccountNumber(transactionRequestDto.getAccountNumber());
+        if (account == null) {
+            throw new IllegalArgumentException("Account does not exist");
+        }
+
+        if (account.getBalance() < transactionRequestDto.getAmount()) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+
+        // Create transaction
+        Transaction transaction = new Transaction();
+        transaction.setAmount(transactionRequestDto.getAmount());
+        transaction.setTransactionType(TransactionType.WITHDRAW);
+        transaction.setAccount(account);
+        transaction.setTimestamp(LocalDateTime.now());
+        transactionRepository.save(transaction);
+
+        // Update account balance
+        account.setBalance(account.getBalance() - transactionRequestDto.getAmount());
+        accountRepository.save(account);
+
+        transactionRequestDto.setTransactionType(TransactionType.WITHDRAW.toString());
+        return transactionRequestDto;
+    }
+
+
+
 }
