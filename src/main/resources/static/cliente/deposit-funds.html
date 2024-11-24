@@ -157,13 +157,13 @@
 
         console.log('Sending deposit request:', {
             accountNumber: accountNumber,
-            amount: depositAmount // Updated to match TransactionRequestDto structure
+            amount: depositAmount
         });
 
-        // Send the deposit request to the correct TransactionController endpoint
+
         axios.post('/api/transaction/deposit', {
             accountNumber: accountNumber,
-            amount: depositAmount // Updated field name
+            amount: depositAmount
         })
             .then(response => {
                 Swal.fire({
@@ -172,7 +172,7 @@
                     text: `Successfully deposited $${depositAmount.toFixed(2)} to account ${accountNumber}.`,
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    location.reload(); // Reload the page to update UI with new balance
+                    location.reload();
                 });
             })
             .catch(error => {

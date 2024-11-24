@@ -20,8 +20,6 @@ public class TransactionService {
     private final ITransactionRepository transactionRepository;
     private final IAccountRepository accountRepository;
 
-
-
     @Autowired
     public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository) {
         this.transactionRepository = transactionRepository;

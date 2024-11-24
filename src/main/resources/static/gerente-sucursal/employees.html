@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Manager Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-link {
+            display: block;
+            width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 30px;
+            background-color: #495057;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #6c757d;
+        }
+        .sidebar .logout-btn {
+            margin-top: auto;
+            width: 80%;
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sidebar .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .info-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .info-card h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .info-card p {
+            margin: 5px 0 0;
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar">
+        <img src="" alt="Profile Image" class="profile-img" onclick="window.location.href='/gerente_sucursal/dashboard'">
+        <a href="/gerente_sucursal/employees" class="nav-link"><i class="fas fa-users"></i>Manage employees</a>
+        <a href="/gerente_sucursal/loans" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> See ongoing loans</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+    </div>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Manage Pipil Banco's employees</h2>
+            <button type="button" id="open-register-employee-modal" class="btn btn-success" >
+                <i class="bi bi-person-plus"></i> Add new employee
+            </button>
+            <button type="button" id="open-create-action-modal" class="btn btn-success mb-3">
+                Create employee action
+            </button>
+        </div>
+
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>DUI</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="cajero-table-body">
+            <!-- Rows will be dynamically added -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal to register new employees -->
+<div class="modal fade" id="registerEmployeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Register New Employee</h5>
+                <button type="button" class="btn-close" onclick="closeRegisterModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="register-employee-form">
+                    <div class="mb-3">
+                        <label for="employee-name" class="form-label">Employee Name</label>
+                        <input type="text" class="form-control" id="employee-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="employee-dui" class="form-label">Employee DUI</label>
+                        <input type="text" class="form-control" id="employee-dui" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="employee-email" class="form-label">Employee Email</label>
+                        <input type="email" class="form-control" id="employee-email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="employee-password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="employee-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal to create a new employee action -->
+
+<div class="modal fade" id="createActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Personnel Writeup</h5>
+                <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-action-form">
+                    <div class="mb-3">
+                        <label for="employee-id-dropdown" class="form-label">Select Employee</label>
+                        <select class="form-select" id="employee-id-dropdown" required>
+                            <option value="">Select an employee</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="action-type" class="form-label">Action Type</label>
+                        <select class="form-select" id="action-type" required>
+                            <option value="HIRE">Hire</option>
+                            <option value="FIRE">Fire</option>
+                            <option value="PROMOTION">Promotion</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="create-action-button">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    const registerEmployeeModal = new bootstrap.Modal(document.getElementById('registerEmployeeModal'));
+    document.getElementById('open-register-employee-modal').addEventListener('click', function () {
+        registerEmployeeModal.show();
+    });
+
+    function closeRegisterModal() {
+        registerEmployeeModal.hide();
+    }
+
+    const createActionModal = new bootstrap.Modal(document.getElementById('createActionModal'));
+    document.getElementById('open-create-action-modal').addEventListener('click', function () {
+        populateEmployeeDropdown();
+        createActionModal.show();
+    });
+    function closeModal() {
+        createActionModal.hide();
+    }
+
+    function loadCajeroUsers() {
+        axios.get('/api/users/cajero')
+            .then(response => {
+                const tableBody = document.getElementById('cajero-table-body');
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                response.data.forEach((user, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.dui}</td>
+                    <td>${user.status}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="deactivateUser(${user.id})">Deactivate</button>
+                    </td>
+                `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching employees:', error));
+    }
+
+    function deactivateUser(userId) {
+        axios.put(`/api/users/deactivate/${userId}`)
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'User Deactivated',
+                    text: `Successfully deactivated user: ${response.data.name}.`,
+                });
+                loadCajeroUsers(); // Reload table
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to deactivate user. Please try again later.',
+                });
+            });
+    }
+
+    document.getElementById('register-employee-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const name = document.getElementById('employee-name').value;
+        const dui = document.getElementById('employee-dui').value;
+        const email = document.getElementById('employee-email').value;
+        const password = document.getElementById('employee-password').value;
+
+        if (!name || !dui || !email || !password) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Input',
+                text: 'Please fill in all fields.',
+            });
+            return;
+        }
+
+
+        axios.post('/api/users/register', {
+            name: name,
+            dui: dui,
+            email: email,
+            password: password,
+            role: 'CAJERO',
+            status: 'ACTIVE', // Default status
+        })
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Employee Registered',
+                    text: `Successfully registered employee: ${name}.`,
+                });
+                document.getElementById('register-employee-form').reset();
+                registerEmployeeModal.hide();
+            })
+            .catch(error => {
+                console.error('Error registering employee:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to register employee. Please try again later.',
+                });
+            });
+    });
+
+    document.getElementById('create-action-button').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const employeeId = document.getElementById('employee-id-dropdown').value;
+        const actionType = document.getElementById('action-type').value;
+
+        if (!employeeId || !actionType) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Input',
+                text: 'Please fill in all fields.',
+            });
+            return;
+        }
+
+        axios.post('/api/actions/create', {
+            employeeId: employeeId,
+            actionType: actionType,
+        })
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Action Created',
+                    text: `Personnel writeup created successfully for Employee ID: ${employeeId}.`,
+                });
+                document.getElementById('create-action-form').reset();
+                const createActionModal = new bootstrap.Modal(document.getElementById('createActionModal'));
+                createActionModal.hide();
+            })
+            .catch(error => {
+                console.error('Error creating action:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to create personnel writeup. Please try again.',
+                });
+            });
+    });
+
+    // Fetch employees and populate the dropdown
+    function populateEmployeeDropdown() {
+        axios.get('/api/users/cajero') // Use the provided endpoint
+            .then(response => {
+                const employees = response.data;
+                const dropdown = document.getElementById('employee-id-dropdown');
+                dropdown.innerHTML = '<option value="">Select an employee</option>'; // Clear existing options
+
+                employees.forEach(employee => {
+                    const option = document.createElement('option');
+                    option.value = employee.id; // Use the employee ID as the value
+                    option.textContent = `${employee.name} (${employee.email})`; // Display name and email
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching CAJERO users:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load employees. Please try again later.',
+                });
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCajeroUsers);
+</script>
+</body>
+</html>

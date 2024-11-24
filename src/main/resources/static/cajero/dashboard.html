@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cajero Dashboard</title>
+    <title>Clerk Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <style>
         body, html {
             height: 100%;
@@ -61,18 +64,103 @@
 <body>
 <div class="d-flex">
     <div class="sidebar">
-        <img src="/path/to/profile.jpg" alt="Profile Image" class="profile-img" onclick="window.location.href='/cajero/dashboard'">
-        <a href="/cajero/register-client" class="nav-link"><i class="fas fa-user-plus"></i> Register New Client</a>
-        <a href="/cajero/register-dependent" class="nav-link"><i class="fas fa-user-friends"></i> Register New Dependent</a>
-        <a href="/cajero/manage-loaners" class="nav-link"><i class="fas fa-money-check-alt"></i> Manage Loaners' Funds</a>
-        <a href="/cajero/open-loan" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Open a New Loan</a>
-        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/cajero/dashboard'">
+        <a href="/cajero/manage-loans" class="nav-link"><i class="fas fa-exchange-alt"></i> Manage money</a>
+        <a href="/cajero/open-loan" class="nav-link"><i class="fas fa-plus-circle"></i> New loan</a>
+        <a href="/cajero/register-client" class="nav-link"><i class="fas fa-users"></i> Register client</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
     </div>
-    <div class="flex-grow-1 p-4">
-        <!-- Main content of the dashboard goes here -->
-        <h1>Welcome to the Cajero Dashboard</h1>
-        <p>Use the navigation on the left to manage your operations.</p>
+    <div class="container mt-4">
+        <h2 class="text-center">Loan List</h2>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Loan ID</th>
+                <th>Amount</th>
+                <th>Interest Rate (%)</th>
+                <th>Term (Years)</th>
+                <th>Monthly Payment</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody id="loan-list">
+            <!-- Loan rows will be appended here dynamically -->
+            </tbody>
+        </table>
     </div>
 </div>
+<script>
+
+    // Function to format the account number in groups of 4 digits
+    function formatAccountNumber(accountNumber) {
+        return accountNumber.replace(/(\d{3})(?=\d)/g, '$1-');
+    }
+
+    // Fetch the current logged-in user's email and DUI
+    axios.get('/api/users/current')
+        .then(response => {
+            const userEmail = response.data.email;
+            const userDui = response.data.dui; // Assuming the response includes the DUI
+            const userName = response.data.name;
+            const container = document.getElementById('accounts-container');
+
+            // Fetch loans and display in the table
+            axios.get('/api/loans')
+                .then(response => {
+                    const loans = response.data;
+                    const loanList = document.getElementById('loan-list');
+                    loans.forEach(loan => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${loan.id}</td>
+                            <td>$${loan.amount.toFixed(2)}</td>
+                            <td>${loan.interestRate.toFixed(2)}</td>
+                            <td>${loan.termInYears}</td>
+                            <td>$${loan.monthlyPayment.toFixed(2)}</td>
+                            <td>${loan.status}</td>
+                        `;
+                        loanList.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching loans:', error);
+                });
+        })
+        .catch(error => {
+            console.error('Error fetching user email:', error);
+            document.getElementById('accounts-container').innerHTML = '<p>Error loading user details. Please try again later.</p>';
+        });
+
+    // Function to create a new account with a random account number and DUI
+    function createNewAccount(userEmail, userDui) {
+        const randomAccountNumber = Math.floor(10000000 + Math.random() * 90000000).toString(); // Generates an 8-digit number
+
+        axios.post('/api/account', {
+            accountNumber: randomAccountNumber,
+            userEmail: userEmail,
+            balance: 0.0,
+            dui: userDui
+        })
+            .then(response => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'New Account Created',
+                    text: `Account number ${formatAccountNumber(randomAccountNumber)} has been successfully created.`,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload(); // Reload the page to refresh the account list
+                });
+            })
+            .catch(error => {
+                console.error('Error creating new account:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to Create Account',
+                    text: error.response ? error.response.data : 'Unknown error occurred',
+                    confirmButtonText: 'Try Again'
+                });
+            });
+    }
+</script>
 </body>
 </html>

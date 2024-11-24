@@ -165,11 +165,29 @@ public class RouteController {
     }
 
     @GET
-    @Path("/gerente_general/dashboard")
-    @RolesAllowed("GERENTE_GENERAL")
-    public Response getGerenteGeneralDashboard() {
-        return Response.ok(new File("src/main/resources/static/gerente-general/dashboard.html")).build();
+    @Path("/cajero/manage-loans")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroManagedLoans() {
+        return Response.ok(new File("src/main/resources/static/cajero/manage-loaners-funds.html")).build();
     }
+
+    @GET
+    @Path("/cajero/open-loan")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroOpenLoans() {
+        return Response.ok(new File("src/main/resources/static/cajero/open-loan.html")).build();
+    }
+
+    @GET
+    @Path("/cajero/register-client")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroRegisterClient() {
+        return Response.ok(new File("src/main/resources/static/cajero/register-client.html")).build();
+    }
+
+    // TERMINA CAJEROS
+
+    // EMPIEZA GERENTE SUCURSAL
 
     @GET
     @Path("/gerente_sucursal/dashboard")
@@ -177,4 +195,51 @@ public class RouteController {
     public Response getGerenteSucursalDashboard() {
         return Response.ok(new File("src/main/resources/static/gerente-sucursal/dashboard.html")).build();
     }
+
+    @GET
+    @Path("/gerente_sucursal/employees")
+    @RolesAllowed("GERENTE_SUCURSAL")
+    public Response getGerenteSucursalManageEmployees() {
+        return Response.ok(new File("src/main/resources/static/gerente-sucursal/employees.html")).build();
+    }
+
+    @GET
+    @Path("/gerente_sucursal/loans")
+    @RolesAllowed("GERENTE_SUCURSAL")
+    public Response getGerenteSucursalOngoingLoans() {
+        return Response.ok(new File("src/main/resources/static/gerente-sucursal/loans.html")).build();
+    }
+
+    // TERMINA GERENTE SUCURSAL
+
+    // EMPIEZA GERENTE GENERAL
+
+    @GET
+    @Path("/gerente_general/dashboard")
+    @RolesAllowed("GERENTE_GENERAL")
+    public Response getGerenteGeneralDashboard() {
+        return Response.ok(new File("src/main/resources/static/gerente-general/dashboard.html")).build();
+    }
+
+    @GET
+    @Path("/gerente_general/employee_actions")
+    @RolesAllowed("GERENTE_GENERAL")
+    public Response getGerenteGeneralEmployeeActions() {
+        return Response.ok(new File("src/main/resources/static/gerente-general/employee-actions.html")).build();
+    }
+
+    @GET
+    @Path("/gerente_general/transactions-overview")
+    @RolesAllowed("GERENTE_GENERAL")
+    public Response getGerenteGeneralTransactionsOverview() {
+        return Response.ok(new File("src/main/resources/static/gerente-general/transactions-overview.html")).build();
+    }
+
+    @GET
+    @Path("/gerente_general/franchise-management")
+    @RolesAllowed("GERENTE_GENERAL")
+    public Response getGerenteGeneralFranchiseManagement() {
+        return Response.ok(new File("src/main/resources/static/gerente-general/franchise-management.html")).build();
+    }
+
 }

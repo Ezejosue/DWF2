@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.fase2.dwf2.enums.Role;
+import org.fase2.dwf2.enums.UserStatus;
 
 import java.util.List;
 
@@ -41,4 +42,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Loan> transactions;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
 }
