@@ -2,9 +2,241 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clerk Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-link {
+            display: block;
+            width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 30px;
+            background-color: #495057;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #6c757d;
+        }
+        .sidebar .logout-btn {
+            margin-top: auto;
+            width: 80%;
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sidebar .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 <body>
+<div class="d-flex">
+    <div class="sidebar">
+        <img src="/img/clientpfp.png" alt="Profile Image" class="profile-img" onclick="window.location.href='/cajero/dashboard'">
+        <a href="/cajero/manage-loans" class="nav-link"><i class="fas fa-exchange-alt"></i> Manage money</a>
+        <a href="/cajero/open-loan" class="nav-link"><i class="fas fa-plus-circle"></i> New loan</a>
+        <a href="/cajero/register-client" class="nav-link"><i class="fas fa-users"></i> Register client</a>
+        <button class="logout-btn" onclick="window.location.href='/logout'"><i class="fas fa-sign-out-alt"></i> Log out</button>
+    </div>
+    <div class="container mt-4">
+        <h2 class="text-center">Open Loan</h2>
+        <form id="loan-form" class="mt-4">
+            <div class="form-group">
+                <label for="client-email">Client's Email</label>
+                <input type="email" class="form-control" id="client-email" placeholder="Enter client's email" required>
+            </div>
+            <div class="form-group">
+                <label for="salary">Client's Monthly Salary ($)</label>
+                <input type="number" class="form-control" id="salary" placeholder="Enter salary" required>
+            </div>
+            <div class="form-group">
+                <label for="loan-amount">Loan Amount ($)</label>
+                <input type="number" class="form-control" id="loan-amount" placeholder="Enter loan amount" required>
+            </div>
+            <div class="form-group">
+                <label for="interest-rate">Interest Rate (%)</label>
+                <input type="text" class="form-control" id="interest-rate" readonly>
+            </div>
+            <div class="form-group">
+                <label for="monthly-payment">Monthly Payment ($)</label>
+                <input type="text" class="form-control" id="monthly-payment" readonly>
+            </div>
+            <div class="form-group">
+                <label for="term-in-years">Loan Term (Years)</label>
+                <input type="text" class="form-control" id="term-in-years" readonly>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Loan</button>
+        </form>
+    </div>
+</div>
+<script>
 
+    // Trigger calculations whenever salary or loan amount changes
+    document.getElementById('salary').addEventListener('input', calculateLoanDetails);
+    document.getElementById('loan-amount').addEventListener('input', calculateLoanDetails);
+
+    function calculateLoanDetails() {
+        const salaryInput = document.getElementById('salary');
+        const loanAmountInput = document.getElementById('loan-amount');
+        const salary = parseFloat(salaryInput.value);
+        const loanAmount = parseFloat(loanAmountInput.value);
+
+        // Reset fields if salary or loan amount is invalid
+        if (!salary || salary <= 0 || !loanAmount || loanAmount <= 0) {
+            resetFormFields();
+            return;
+        }
+
+        // Define loan rules based on salary
+        let maxLoan = 0;
+        let interestRate = 0;
+
+        if (salary < 365) {
+            maxLoan = 10000;
+            interestRate = 3;
+        } else if (salary < 600) {
+            maxLoan = 25000;
+            interestRate = 3;
+        } else if (salary < 900) {
+            maxLoan = 35000;
+            interestRate = 4;
+        } else if (salary >= 1000) {
+            maxLoan = 50000;
+            interestRate = 5;
+        }
+
+        // Validate loan amount
+        if (loanAmount > maxLoan) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Exceeded Loan Limit',
+                text: `Loan amount cannot exceed $${maxLoan}.`,
+            });
+            loanAmountInput.setCustomValidity(`Loan amount exceeds the maximum allowed ($${maxLoan}).`);
+            resetFormFields();
+            return;
+        } else {
+            loanAmountInput.setCustomValidity('');
+        }
+
+        // Calculate monthly payment (30% of salary) and loan term
+        const maxMonthlyPayment = salary * 0.3; // 30% of monthly salary
+        const termInYears = Math.ceil(loanAmount / (maxMonthlyPayment * 12)); // Years to pay off
+
+        // Update form fields dynamically
+        document.getElementById('interest-rate').value = `${interestRate}%`;
+        document.getElementById('monthly-payment').value = `$${maxMonthlyPayment.toFixed(2)}`;
+        document.getElementById('term-in-years').value = termInYears;
+    }
+
+    function resetFormFields() {
+        document.getElementById('interest-rate').value = '';
+        document.getElementById('monthly-payment').value = '';
+        document.getElementById('term-in-years').value = '';
+    }
+
+    // Handle form submission
+    document.getElementById('loan-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const clientEmail = document.getElementById('client-email').value;
+        const salary = parseFloat(document.getElementById('salary').value);
+        const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+        const interestRate = parseFloat(document.getElementById('interest-rate').value.replace('%', ''));
+        const monthlyPayment = parseFloat(document.getElementById('monthly-payment').value.replace('$', ''));
+        const termInYears = parseInt(document.getElementById('term-in-years').value);
+
+        if (!clientEmail || loanAmount <= 0 || isNaN(loanAmount) || isNaN(interestRate) || isNaN(termInYears) || isNaN(monthlyPayment)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Input',
+                text: 'Please fill out all fields with valid values.',
+            });
+            return;
+        }
+
+        console.log("Loan data being sent:", {
+            email: clientEmail,
+            salary: salary,
+            amount: loanAmount,
+            interestRate: interestRate,
+            monthlyPayment: monthlyPayment,
+            termInYears: termInYears,
+        });
+
+
+        // Send the loan creation request to the server
+        axios.post('/api/loans/create', {
+            email: clientEmail,
+            salary: salary,
+            amount: loanAmount,
+            interestRate: interestRate,
+            monthlyPayment: monthlyPayment,
+            termInYears: termInYears,
+        })
+            .then(response => {
+                const loan = response.data;
+
+                // Show success notification with loan details
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Loan Created',
+                    html: `
+                    <p>Loan ID: <strong>${loan.id}</strong></p>
+                    <p>Email: <strong>${loan.email}</strong></p>
+                    <p>Amount: <strong>$${loan.amount.toFixed(2)}</strong></p>
+                    <p>Interest Rate: <strong>${loan.interestRate}%</strong></p>
+                    <p>Monthly Payment: <strong>$${loan.monthlyPayment.toFixed(2)}</strong></p>
+                    <p>Status: <strong>${loan.status}</strong></p>
+                    <p>Start Date: <strong>${new Date(loan.startDate).toLocaleDateString()}</strong></p>
+                `,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload(); // Reload the page after creating the loan
+                });
+            })
+            .catch(error => {
+                console.error('Error creating loan:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Loan Creation Failed',
+                    text: error.response ? error.response.data : 'An error occurred. Please try again later.',
+                });
+            });
+    });
+
+</script>
 </body>
 </html>

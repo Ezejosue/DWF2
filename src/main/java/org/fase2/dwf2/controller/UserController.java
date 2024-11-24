@@ -81,10 +81,10 @@ public class UserController{
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication); // Save authentication
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Attach the SecurityContext to the session
-        HttpSession session = request.getSession(true); // Create a session if one doesn't exist
+        HttpSession session = request.getSession(true);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 SecurityContextHolder.getContext());
 
@@ -113,11 +113,25 @@ public class UserController{
         if (userService.existsByEmail(registerRequest.getEmail())) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Email is already in use").build();
         }
-        registerRequest.setRole(Role.CLIENT);
         registerRequest.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         UserDto newUser = userService.save(registerRequest);
         return Response.status(Response.Status.CREATED).entity(newUser).build();
     }
+
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchUser(@QueryParam("key") String key) {
+        try {
+            UserDto user = userService.searchUserByKey(key); // Search for user by key
+            return Response.ok(user).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error searching for user").build();
+        }
+    }
+
 
     @PUT
     @Path("/{email}")

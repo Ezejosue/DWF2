@@ -165,11 +165,29 @@ public class RouteController {
     }
 
     @GET
-    @Path("/gerente_general/dashboard")
-    @RolesAllowed("GERENTE_GENERAL")
-    public Response getGerenteGeneralDashboard() {
-        return Response.ok(new File("src/main/resources/static/gerente-general/dashboard.html")).build();
+    @Path("/cajero/manage-loans")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroManagedLoans() {
+        return Response.ok(new File("src/main/resources/static/cajero/manage-loaners-funds.html")).build();
     }
+
+    @GET
+    @Path("/cajero/open-loan")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroOpenLoans() {
+        return Response.ok(new File("src/main/resources/static/cajero/open-loan.html")).build();
+    }
+
+    @GET
+    @Path("/cajero/register-client")
+    @RolesAllowed("CAJERO")
+    public Response getCajeroRegisterClient() {
+        return Response.ok(new File("src/main/resources/static/cajero/register-client.html")).build();
+    }
+
+    // TERMINA CAJEROS
+
+    // EMPIEZA GERENTE SUCURSAL
 
     @GET
     @Path("/gerente_sucursal/dashboard")
@@ -177,4 +195,16 @@ public class RouteController {
     public Response getGerenteSucursalDashboard() {
         return Response.ok(new File("src/main/resources/static/gerente-sucursal/dashboard.html")).build();
     }
+
+    // TERMINA GERENTE SUCURSAL
+
+    // EMPIEZA GERENTE GENERAL
+
+    @GET
+    @Path("/gerente_general/dashboard")
+    @RolesAllowed("GERENTE_GENERAL")
+    public Response getGerenteGeneralDashboard() {
+        return Response.ok(new File("src/main/resources/static/gerente-general/dashboard.html")).build();
+    }
+
 }
