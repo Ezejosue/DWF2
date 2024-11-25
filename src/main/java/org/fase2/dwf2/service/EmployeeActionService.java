@@ -1,6 +1,5 @@
 package org.fase2.dwf2.service;
 
-import org.fase2.dwf2.dto.Account.AccountResponseDto;
 import org.fase2.dwf2.dto.EmployeeAction.EmployeeActionRequestDto;
 import org.fase2.dwf2.dto.EmployeeAction.EmployeeActionResponseDto;
 import org.fase2.dwf2.dto.Login.RegisterRequestDto;
@@ -9,23 +8,14 @@ import org.fase2.dwf2.entities.EmployeeAction;
 import org.fase2.dwf2.entities.User;
 import org.fase2.dwf2.entities.Account;
 import org.fase2.dwf2.enums.ActionStatus;
-import org.fase2.dwf2.enums.Role;
-import org.fase2.dwf2.enums.UserStatus;
-import org.fase2.dwf2.repository.IAccountRepository;
 import org.fase2.dwf2.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.fase2.dwf2.repository.IEmployeeActionRepository;
-import org.fase2.dwf2.repository.IUserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class EmployeeActionService {
@@ -64,6 +54,22 @@ public class EmployeeActionService {
 
     public long countPendingEmployeeActions() {
         return employeeActionRepository.countByStatus(ActionStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeActionResponseDto> getPendingEmployeeActions() {
+        List<EmployeeAction> actions = employeeActionRepository.findByStatus(ActionStatus.PENDING);
+        return actions.stream().map(this::mapToResponseDto).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public EmployeeActionResponseDto updateEmployeeActionStatus(Long id, ActionStatus status) {
+        EmployeeAction action = employeeActionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Action not found"));
+        action.setStatus(status);
+        action.setActionDate(LocalDateTime.now());
+        EmployeeAction updatedAction = employeeActionRepository.save(action);
+        return mapToResponseDto(updatedAction);
     }
 
     private EmployeeActionResponseDto mapToResponseDto(EmployeeAction action) {

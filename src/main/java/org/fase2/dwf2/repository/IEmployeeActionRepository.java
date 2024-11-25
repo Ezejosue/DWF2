@@ -12,4 +12,5 @@ public interface IEmployeeActionRepository extends JpaRepository<EmployeeAction,
 
     List<EmployeeAction> findByStatus(ActionStatus status);
     long countByStatus(ActionStatus status);
+
 }
