@@ -21,6 +21,7 @@ public class JerseyConfig extends ResourceConfig {
         register(TestController.class);
         register(LoanController.class);
         register(EmployeeActionController.class);
+        register(BranchController.class);
 
 
         // Agregar un proveedor de Jackson para la serialización JSON

@@ -237,6 +237,23 @@ public class UserController{
     }
 
     @GET
+    @Path("/gerente-sucursal")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get GERENTE_SUCURSAL users", description = "Fetches all users with the GERENTE_SUCURSAL role")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of GERENTE_SUCURSAL users"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public Response getGerenteSucursalUsers() {
+        try {
+            List<UserDto> gerenteSucursalUsers = userService.getGerenteSucursalUsers();
+            return Response.ok(gerenteSucursalUsers).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error fetching users").build();
+        }
+    }
+
+    @GET
     @Path("/user/test")
     public Response test() {
         return Response.ok("Test").build();

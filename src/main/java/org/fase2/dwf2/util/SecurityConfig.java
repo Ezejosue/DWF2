@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/login","/register","/api/users/register","/api/users/search","/user/test","/api/users/login","/api/users/user/roles",
                                 "/api/users/user/test", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/index.html",
-                                "/access-denied", "/api/loans/**").permitAll()
+                                "/access-denied", "/api/loans/**","/api/branches/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/client/**").hasRole("CLIENT")
                         .requestMatchers("/cliente/**").hasRole("CLIENT")

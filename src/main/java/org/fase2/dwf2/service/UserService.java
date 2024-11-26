@@ -106,6 +106,13 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<UserDto> getGerenteSucursalUsers() {
+        List<User> users = userRepository.findByRole(Role.GERENTE_SUCURSAL);
+        return users.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
