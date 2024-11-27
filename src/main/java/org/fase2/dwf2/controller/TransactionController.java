@@ -7,6 +7,8 @@ import org.fase2.dwf2.dto.Transaction.TransactionRequestDto;
 import org.fase2.dwf2.service.TransactionService;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Path("/api/transaction")
 @Produces(MediaType.APPLICATION_JSON)
@@ -17,6 +19,14 @@ public class TransactionController {
 
     public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
+    }
+
+    @GET
+    @Path("/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllTransactions() {
+        List<TransactionRequestDto> transactions = transactionService.getAllTransactions();
+        return Response.ok(transactions).build();
     }
 
     @GET

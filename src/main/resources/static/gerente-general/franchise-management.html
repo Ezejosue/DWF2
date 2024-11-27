@@ -100,18 +100,20 @@
             <thead>
             <tr>
                 <th>Branch ID</th>
-                <th>Branch Name</th>
+                <th>Branch name</th>
                 <th>Location</th>
-                <th>Assign Manager</th>
+                <th>Manager name</th>
+                <th>Manager email</th>
+                <th>Select manager</th>
             </tr>
             </thead>
-            <tbody id="branches-body">
+            <tbody id="branch-table-body">
             <!-- Dynamically populated -->
             </tbody>
         </table>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal for Assigning Manager -->
     <div class="modal fade" id="assignManagerModal" tabindex="-1" aria-labelledby="assignManagerModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -123,9 +125,11 @@
                     <form id="assign-manager-form">
                         <div class="mb-3">
                             <label for="manager-select" class="form-label">Select Manager</label>
-                            <select class="form-select" id="manager-select"></select>
+                            <select class="form-select" id="manager-select">
+                                <!-- Options will be dynamically populated -->
+                            </select>
                         </div>
-                        <input type="hidden" id="branch-id" />
+                        <input type="hidden" id="selected-branch-id" />
                         <button type="submit" class="btn btn-primary">Assign</button>
                     </form>
                 </div>
@@ -133,7 +137,7 @@
         </div>
     </div>
 
-<!-- Modal for adding a new branch -->
+    <!-- Modal for adding a new branch -->
     <div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -179,7 +183,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="gerente-dui" class="form-label">DUI</label>
-                            <input type="text" class="form-control" id="gerente-dui" placeholder="XXXXXXXX-X" pattern="\\d{8}-\\d" required>
+                            <input type="text" class="form-control" id="gerente-dui" placeholder="XXXXXXXX-X" required>
                         </div>
                         <div class="mb-3">
                             <label for="gerente-password" class="form-label">Password</label>
@@ -208,73 +212,69 @@
     });
 
     document.addEventListener('DOMContentLoaded', function () {
-        const branchesBody = document.getElementById('branches-body');
         const managerSelect = document.getElementById('manager-select');
         const assignManagerForm = document.getElementById('assign-manager-form');
         const branchIdInput = document.getElementById('branch-id');
 
+        console.log("Maafaka");
+
         // Fetch unassigned branches
-        axios.get('/api/branches/unassigned')
+        axios.get('/api/branches/all')
             .then(response => {
                 const branches = response.data;
-                branchesBody.innerHTML = '';
+                const tableBody = document.getElementById('branch-table-body');
+                tableBody.innerHTML = ''; // Clear existing rows
 
-                if (branches.length === 0) {
-                    branchesBody.innerHTML = '<tr><td colspan="4" class="text-center">No unassigned branches found.</td></tr>';
-                } else {
-                    branches.forEach(branch => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                        <td>${branch.id}</td>
-                        <td>${branch.name}</td>
-                        <td>${branch.location}</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm assign-btn" data-id="${branch.id}" data-bs-toggle="modal" data-bs-target="#assignManagerModal">
-                                Assign
-                            </button>
-                        </td>
-                    `;
-                        branchesBody.appendChild(row);
-                    });
-
-                    addAssignEventListeners();
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching branches:', error);
-            });
-
-        // Fetch GERENTE_SUCURSAL users
-        axios.get('/api/users/gerente-sucursal')
-            .then(response => {
-                const managers = response.data;
-                managerSelect.innerHTML = '';
-                managers.forEach(manager => {
-                    const option = document.createElement('option');
-                    option.value = manager.id;
-                    option.textContent = `${manager.name} (${manager.email})`;
-                    managerSelect.appendChild(option);
+                branches.forEach(branch => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                <td>${branch.id}</td>
+                <td>${branch.name}</td>
+                <td>${branch.location}</td>
+                <td>${branch.managerName || 'Unassigned'}</td>
+                <td>${branch.managerEmail || 'Unassigned'}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm assign-btn" data-id="${branch.id}" data-bs-toggle="modal" data-bs-target="#assignManagerModal">
+                        Assign
+                    </button>
+                </td>
+            `;
+                    tableBody.appendChild(row);
                 });
+
+                // Add event listeners for Assign buttons
+                addAssignEventListeners();
             })
-            .catch(error => {
-                console.error('Error fetching managers:', error);
-            });
+            .catch(error => console.error('Error fetching branches:', error));
 
         // Handle assignment submission
-        assignManagerForm.addEventListener('submit', function (event) {
+        document.getElementById('assign-manager-form').addEventListener('submit', function (event) {
             event.preventDefault();
-            const managerId = managerSelect.value;
-            const branchId = branchIdInput.value;
+
+            const managerId = document.getElementById('manager-select').value;
+            const branchId = document.getElementById('selected-branch-id').value;
 
             axios.put(`/api/branches/${branchId}/assign/${managerId}`)
                 .then(response => {
-                    alert('Manager assigned successfully!');
-                    location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Manager Assigned',
+                        text: 'The manager has been successfully assigned to the branch.',
+                    }).then(() => {
+                        // Refresh the branches table
+                        location.reload();
+                    });
                 })
                 .catch(error => {
                     console.error('Error assigning manager:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Assignment Failed',
+                        text: 'Failed to assign the manager. Please try again later.',
+                    });
                 });
         });
+
 
         // Submit add branch form
         document.getElementById('add-branch-form').addEventListener('submit', function (event) {
@@ -283,7 +283,7 @@
             const branchName = document.getElementById('branch-name').value;
             const branchLocation = document.getElementById('branch-location').value;
 
-            axios.post('/api/branches', { name: branchName, location: branchLocation })
+            axios.post('/api/branches/new-branch', { name: branchName, location: branchLocation })
                 .then(response => {
                     Swal.fire({
                         icon: 'success',
@@ -338,14 +338,39 @@
                 });
         });
 
-        // Add event listeners to assign buttons
         function addAssignEventListeners() {
             document.querySelectorAll('.assign-btn').forEach(button => {
                 button.addEventListener('click', function () {
-                    branchIdInput.value = this.getAttribute('data-id');
+                    const branchId = this.getAttribute('data-id');
+                    document.getElementById('selected-branch-id').value = branchId;
+
+                    // Load the list of managers into the dropdown
+                    loadManagers();
+                    const modal = new bootstrap.Modal(document.getElementById('assignManagerModal'));
+                    modal.show();
+
                 });
             });
         }
+
+        function loadManagers() {
+            axios.get('/api/users/gerente-sucursal')
+                .then(response => {
+                    const managers = response.data;
+                    const managerSelect = document.getElementById('manager-select');
+                    managerSelect.innerHTML = ''; // Clear existing options
+
+                    managers.forEach(manager => {
+                        const option = document.createElement('option');
+                        option.value = manager.id;
+                        option.textContent = `${manager.name} (${manager.email})`;
+                        managerSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching managers:', error));
+        }
+
+
     });
 
 </script>
